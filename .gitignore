@@ -1,0 +1,32 @@
+# Dependências (recriadas com `npm install`)
+node_modules/
+
+# Variáveis de ambiente — NUNCA subir senhas/segredos no GitHub
+.env
+.env.local
+apps/api/.env
+apps/web/.env
+
+# Build de produção
+dist/
+build/
+apps/api/dist/
+apps/web/dist/
+
+# Backups do banco (arquivos locais, não fazem parte do código)
+apps/api/backups/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+
+# Prisma (o client gerado não precisa ir pro repositório)
+node_modules/.prisma/

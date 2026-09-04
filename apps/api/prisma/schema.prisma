@@ -1,0 +1,452 @@
+// ============================================================
+// SCHEMA DO BANCO — SISTEMA DE GESTÃO PARA MERCADINHO
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------
+
+enum UnitOfMeasure {
+  UN
+  CX
+  FD
+  PCT
+  L
+  ML
+  G
+  KG
+}
+
+enum PaymentMethod {
+  DINHEIRO
+  PIX
+  DEBITO
+  CREDITO
+}
+
+enum SaleStatus {
+  CONCLUIDA
+  CANCELADA
+  DEVOLVIDA_PARCIAL
+  DEVOLVIDA_TOTAL
+}
+
+enum StockMovementType {
+  ENTRADA
+  VENDA
+  CANCELAMENTO
+  DEVOLUCAO
+  AJUSTE
+  INVENTARIO
+}
+
+enum CashierSessionStatus {
+  ABERTO
+  FECHADO
+}
+
+enum CashMovementType {
+  SANGRIA
+  SUPRIMENTO
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  LOGIN_FALHOU
+  VENDA_CRIADA
+  VENDA_CANCELADA
+  VENDA_DEVOLVIDA
+  DESCONTO_APLICADO
+  PRECO_ALTERADO
+  PRODUTO_CRIADO
+  PRODUTO_ALTERADO
+  PRODUTO_INATIVADO
+  CATEGORIA_CRIADA
+  CATEGORIA_ALTERADA
+  CATEGORIA_INATIVADA
+  ENTRADA_ESTOQUE
+  AJUSTE_ESTOQUE
+  INVENTARIO_REALIZADO
+  VENDA_SEM_ESTOQUE_AUTORIZADA
+  CAIXA_ABERTO
+  CAIXA_FECHADO
+  SANGRIA_REGISTRADA
+  SUPRIMENTO_REGISTRADO
+  CONFIGURACAO_ALTERADA
+  SENHA_REDEFINIDA
+  IMPORTACAO_PRODUTOS
+  BACKUP_EXECUTADO
+}
+
+enum BackupStatus {
+  SUCESSO
+  FALHA
+}
+
+// ------------------------------------------------------------
+// USUÁRIOS
+// ------------------------------------------------------------
+
+model User {
+  id            String    @id @default(uuid())
+  fullName      String
+  username      String    @unique
+  passwordHash  String
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  lastLoginAt   DateTime?
+
+  sales             Sale[]
+  cashierSessions   CashierSession[]
+  cashMovements     CashMovement[]
+  stockMovements    StockMovement[]
+  priceHistories    PriceHistory[]
+  auditLogs         AuditLog[]
+  purchases         Purchase[]
+  inventories       Inventory[]
+
+  @@index([username])
+  @@map("users")
+}
+
+// ------------------------------------------------------------
+// CATEGORIAS
+// ------------------------------------------------------------
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products  Product[]
+
+  @@map("categories")
+}
+
+// ------------------------------------------------------------
+// PRODUTOS
+// ------------------------------------------------------------
+
+model Product {
+  id                String        @id @default(uuid())
+  name              String
+  description       String?
+  categoryId        String
+  category          Category      @relation(fields: [categoryId], references: [id])
+  brand             String?
+  unit              UnitOfMeasure @default(UN)
+
+  costPrice         Decimal       @db.Decimal(10, 2)
+  salePrice         Decimal       @db.Decimal(10, 2)
+  profitMargin      Decimal       @db.Decimal(5, 2) // percentual específico do produto
+
+  stockQuantity     Int           @default(0)
+  minStockQuantity  Int           @default(0)
+
+  expirationDate    DateTime?
+  batch             String?
+
+  barcode           String        @unique
+  sku               String        @unique
+
+  active            Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  saleItems         SaleItem[]
+  purchaseItems     PurchaseItem[]
+  stockMovements    StockMovement[]
+  priceHistories    PriceHistory[]
+  inventoryItems    InventoryItem[]
+
+  @@index([name])
+  @@index([barcode])
+  @@index([sku])
+  @@index([categoryId])
+  @@map("products")
+}
+
+// Histórico de preços (custo e venda)
+model PriceHistory {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  field       String   // "costPrice" | "salePrice"
+  oldValue    Decimal  @db.Decimal(10, 2)
+  newValue    Decimal  @db.Decimal(10, 2)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([productId])
+  @@map("price_history")
+}
+
+// ------------------------------------------------------------
+// ENTRADA DE MERCADORIAS
+// ------------------------------------------------------------
+
+model Purchase {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  totalValue  Decimal         @db.Decimal(10, 2)
+  createdAt   DateTime        @default(now())
+
+  items       PurchaseItem[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id              String    @id @default(uuid())
+  purchaseId      String
+  purchase        Purchase  @relation(fields: [purchaseId], references: [id])
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id])
+  quantity        Int
+  unitCost        Decimal   @db.Decimal(10, 2)
+  batch           String?
+  expirationDate  DateTime?
+  total           Decimal   @db.Decimal(10, 2)
+
+  @@index([purchaseId])
+  @@index([productId])
+  @@map("purchase_items")
+}
+
+// ------------------------------------------------------------
+// ESTOQUE — MOVIMENTAÇÕES
+// ------------------------------------------------------------
+
+model StockMovement {
+  id              String            @id @default(uuid())
+  productId       String
+  product         Product           @relation(fields: [productId], references: [id])
+  type            StockMovementType
+  quantity        Int               // pode ser negativo (saída) ou positivo (entrada)
+  previousStock   Int
+  newStock        Int
+  reason          String?           // obrigatório em ajustes
+  sourceType      String?           // "Sale" | "Purchase" | "Inventory" | "Manual"
+  sourceId        String?
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  createdAt       DateTime          @default(now())
+
+  @@index([productId])
+  @@index([type])
+  @@index([sourceType, sourceId])
+  @@map("stock_movements")
+}
+
+// ------------------------------------------------------------
+// INVENTÁRIO
+// ------------------------------------------------------------
+
+model Inventory {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  startedAt   DateTime        @default(now())
+  finishedAt  DateTime?
+
+  items       InventoryItem[]
+
+  @@map("inventories")
+}
+
+model InventoryItem {
+  id              String    @id @default(uuid())
+  inventoryId     String
+  inventory       Inventory @relation(fields: [inventoryId], references: [id])
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id])
+  expectedQty     Int
+  countedQty      Int
+  difference      Int
+
+  @@index([inventoryId])
+  @@index([productId])
+  @@map("inventory_items")
+}
+
+// ------------------------------------------------------------
+// CAIXA
+// ------------------------------------------------------------
+
+model CashierSession {
+  id              String                @id @default(uuid())
+  userId          String
+  user            User                  @relation(fields: [userId], references: [id])
+  status          CashierSessionStatus  @default(ABERTO)
+
+  openingAmount   Decimal               @db.Decimal(10, 2)
+  openedAt        DateTime              @default(now())
+
+  closingCountedCash Decimal?           @db.Decimal(10, 2)
+  closingExpectedCash Decimal?          @db.Decimal(10, 2)
+  closingDifference   Decimal?          @db.Decimal(10, 2)
+  closedAt           DateTime?
+
+  sales           Sale[]
+  cashMovements   CashMovement[]
+
+  @@index([status])
+  @@map("cashier_sessions")
+}
+
+model CashMovement {
+  id                String            @id @default(uuid())
+  cashierSessionId  String
+  cashierSession    CashierSession    @relation(fields: [cashierSessionId], references: [id])
+  type              CashMovementType
+  amount            Decimal           @db.Decimal(10, 2)
+  reason            String
+  userId            String
+  user              User              @relation(fields: [userId], references: [id])
+  createdAt         DateTime          @default(now())
+
+  @@index([cashierSessionId])
+  @@map("cash_movements")
+}
+
+// ------------------------------------------------------------
+// VENDAS (PDV)
+// ------------------------------------------------------------
+
+model Sale {
+  id                String          @id @default(uuid())
+  number            Int             @unique @default(autoincrement())
+  cashierSessionId  String
+  cashierSession    CashierSession  @relation(fields: [cashierSessionId], references: [id])
+  userId            String
+  user              User            @relation(fields: [userId], references: [id])
+
+  subtotal          Decimal         @db.Decimal(10, 2)
+  discountValue     Decimal         @db.Decimal(10, 2) @default(0)
+  discountPercent   Decimal?        @db.Decimal(5, 2)
+  total             Decimal         @db.Decimal(10, 2)
+
+  receivedAmount    Decimal?        @db.Decimal(10, 2) // relevante p/ dinheiro
+  changeAmount      Decimal?        @db.Decimal(10, 2)
+
+  status            SaleStatus      @default(CONCLUIDA)
+  cancelReason      String?
+
+  createdAt         DateTime        @default(now())
+
+  items             SaleItem[]
+  payments          Payment[]
+
+  @@index([cashierSessionId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id                String    @id @default(uuid())
+  saleId            String
+  sale              Sale      @relation(fields: [saleId], references: [id])
+  productId         String
+  product           Product   @relation(fields: [productId], references: [id])
+
+  quantity          Int
+  unitPrice         Decimal   @db.Decimal(10, 2) // congelado no momento da venda
+  unitCost          Decimal   @db.Decimal(10, 2) // congelado (para cálculo de lucro)
+  subtotal          Decimal   @db.Decimal(10, 2)
+
+  returned          Boolean   @default(false)
+  returnedQuantity  Int       @default(0)
+  soldWithoutStock  Boolean   @default(false)
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  saleId    String
+  sale      Sale          @relation(fields: [saleId], references: [id])
+  method    PaymentMethod
+  amount    Decimal       @db.Decimal(10, 2)
+
+  @@index([saleId])
+  @@map("payments")
+}
+
+// ------------------------------------------------------------
+// AUDITORIA
+// ------------------------------------------------------------
+
+model AuditLog {
+  id          String       @id @default(uuid())
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id])
+  action      AuditAction
+  entity      String?      // ex: "Product", "Sale"
+  entityId    String?
+  details     Json?
+  createdAt   DateTime     @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ------------------------------------------------------------
+// BACKUP
+// ------------------------------------------------------------
+
+model BackupLog {
+  id          String        @id @default(uuid())
+  status      BackupStatus
+  fileName    String?
+  sizeBytes   Int?
+  errorMessage String?
+  createdAt   DateTime      @default(now())
+
+  @@map("backup_logs")
+}
+
+// ------------------------------------------------------------
+// CONFIGURAÇÕES DA LOJA (singleton)
+// ------------------------------------------------------------
+
+model StoreSettings {
+  id                  Int      @id @default(1)
+  storeName           String
+  shortName           String?
+  document            String?  // CNPJ/CPF
+  phone               String?
+  whatsapp            String?
+  email                String?
+  address             String?
+  logoUrl             String?
+
+  defaultMargin       Decimal  @db.Decimal(5, 2) @default(30)
+  maxDiscountPercent  Decimal  @db.Decimal(5, 2) @default(30)
+  sessionTimeoutMin   Int      @default(15)
+  backupDayOfWeek     Int      @default(0) // 0 = domingo
+  backupHour          Int      @default(3)
+
+  updatedAt           DateTime @updatedAt
+
+  @@map("store_settings")
+}

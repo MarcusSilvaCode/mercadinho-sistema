@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    font-feature-settings: "cv11", "ss01";
+  }
+}
+
+@layer utilities {
+  .font-money {
+    @apply font-mono tabular-nums;
+  }
+}
