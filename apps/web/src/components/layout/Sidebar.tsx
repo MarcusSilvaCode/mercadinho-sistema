@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   ScanBarcode,
+  ScanLine,
   Receipt,
   Package,
   Tags,
@@ -20,7 +21,8 @@ const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/pdv", label: "PDV", icon: ScanBarcode },
   { to: "/vendas", label: "Vendas", icon: Receipt },
-  { to: "/produtos", label: "Produtos", icon: Package },
+  { to: "/produtos", label: "Produtos", icon: Package, end: true },
+  { to: "/produtos/cadastro-rapido", label: "Cadastro rápido", icon: ScanLine },
   { to: "/categorias", label: "Categorias", icon: Tags },
   { to: "/estoque", label: "Estoque", icon: Boxes, end: true },
   { to: "/estoque/inventario", label: "Inventário", icon: ClipboardList },

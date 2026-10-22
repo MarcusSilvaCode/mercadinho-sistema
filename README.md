@@ -27,6 +27,7 @@ O sistema centraliza toda a operação de um mercadinho pequeno em um único lug
 
 - **PDV** — leitor de código de barras, atalhos de teclado, carrinho, desconto, pagamento dividido, troco, autorização de venda sem estoque.
 - **Produtos e categorias** — cadastro completo, SKU automático, sugestão de preço a partir da margem, histórico de preços.
+- **Cadastro rápido pelo celular** (`/produtos/cadastro-rapido`) — lê o código de barras pela câmera, pré-preenche nome/marca pela base pública Open Food Facts (só o código sai do sistema) e volta para a câmera após salvar. Produto já cadastrado: corrige preços e soma a contagem ao estoque. A câmera exige HTTPS.
 - **Estoque** — movimentações, ajuste manual com motivo, inventário, alertas de validade.
 - **Entrada de mercadorias** — múltiplas linhas, atualização automática de custo e estoque.
 - **Caixa** — abertura/fechamento, sangria/suprimento, cálculo de dinheiro esperado × contado.

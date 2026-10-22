@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FileSpreadsheet, Pencil, Plus, Search } from "lucide-react";
+import { FileSpreadsheet, Pencil, Plus, ScanLine, Search } from "lucide-react";
 import { api } from "../lib/api";
 import { formatCurrency } from "../lib/format";
 import type { Category, Product, ProductListResponse } from "../lib/types";
@@ -72,7 +72,13 @@ export function ProductsPage() {
           <h1 className="text-lg font-semibold text-ink-900">Produtos</h1>
           <p className="text-sm text-ink-500">{total} produto(s) cadastrado(s)</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/produtos/cadastro-rapido"
+            className="flex items-center gap-1.5 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
+          >
+            <ScanLine size={15} /> Cadastro rápido
+          </Link>
           <Link
             to="/produtos/importar"
             className="flex items-center gap-1.5 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"

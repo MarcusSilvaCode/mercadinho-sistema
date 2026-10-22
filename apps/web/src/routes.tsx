@@ -14,6 +14,7 @@ import { SalesPage } from "./pages/SalesPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { AuditPage } from "./pages/AuditPage";
 import { ProductImportPage } from "./pages/ProductImportPage";
+import { QuickRegisterPage } from "./pages/QuickRegisterPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 export const router = createBrowserRouter([
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
           { path: "/vendas", element: <SalesPage /> },
           { path: "/produtos", element: <ProductsPage /> },
           { path: "/produtos/importar", element: <ProductImportPage /> },
+          { path: "/produtos/cadastro-rapido", element: <QuickRegisterPage /> },
           { path: "/categorias", element: <CategoriesPage /> },
           { path: "/estoque", element: <StockPage /> },
           { path: "/estoque/inventario", element: <InventoryPage /> },

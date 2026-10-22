@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { createProductSchema, listProductsQuerySchema, updateProductSchema } from "./products.schema.js";
 import * as productsService from "./products.service.js";
 import { suggestSalePrice } from "../../shared/pricing.js";
+import { LOOKUP_BARCODE_PATTERN, lookupBarcodeInfo } from "./barcodeLookup.service.js";
 
 export async function createProductHandler(req: Request, res: Response) {
   const input = createProductSchema.parse(req.body);
@@ -21,6 +22,15 @@ export async function getProductByBarcodeHandler(req: Request, res: Response) {
     return res.status(404).json({ error: "Produto não cadastrado." });
   }
   res.status(200).json({ product });
+}
+
+export async function lookupBarcodeHandler(req: Request, res: Response) {
+  const barcode = req.params.barcode;
+  if (!LOOKUP_BARCODE_PATTERN.test(barcode)) {
+    return res.status(422).json({ error: "Código de barras deve ter de 8 a 14 dígitos." });
+  }
+  const result = await lookupBarcodeInfo(barcode);
+  res.status(200).json(result);
 }
 
 export async function updateProductHandler(req: Request, res: Response) {

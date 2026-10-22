@@ -6,6 +6,7 @@ import {
   getPriceHistoryHandler,
   getProductByBarcodeHandler,
   listProductsHandler,
+  lookupBarcodeHandler,
   suggestPriceHandler,
   updateProductHandler,
 } from "./products.controller.js";
@@ -18,5 +19,6 @@ productsRouter.get("/", asyncHandler(listProductsHandler));
 productsRouter.post("/", asyncHandler(createProductHandler));
 productsRouter.get("/suggest-price", asyncHandler(suggestPriceHandler));
 productsRouter.get("/barcode/:barcode", asyncHandler(getProductByBarcodeHandler));
+productsRouter.get("/lookup/:barcode", asyncHandler(lookupBarcodeHandler));
 productsRouter.patch("/:id", asyncHandler(updateProductHandler));
 productsRouter.get("/:id/price-history", asyncHandler(getPriceHistoryHandler));

@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { X } from "lucide-react";
 import { api, getApiErrorMessage } from "../../lib/api";
 import type { Category, Product, UnitOfMeasure } from "../../lib/types";
@@ -18,6 +19,7 @@ export function ProductFormModal({ product, prefilledBarcode, onClose, onSaved }
   const isEditing = Boolean(product);
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? "");
@@ -37,7 +39,11 @@ export function ProductFormModal({ product, prefilledBarcode, onClose, onSaved }
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    api.get<{ categories: Category[] }>("/categories").then(({ data }) => setCategories(data.categories));
+    api
+      .get<{ categories: Category[] }>("/categories")
+      .then(({ data }) => setCategories(data.categories))
+      .catch((err) => setError(getApiErrorMessage(err)))
+      .finally(() => setCategoriesLoaded(true));
   }, []);
 
   async function handleSubmit(e: FormEvent) {
@@ -104,6 +110,14 @@ export function ProductFormModal({ product, prefilledBarcode, onClose, onSaved }
                 </option>
               ))}
             </select>
+            {categoriesLoaded && categories.length === 0 && (
+              <p className="mt-1.5 text-xs text-ink-500">
+                Nenhuma categoria ativa.{" "}
+                <Link to="/categorias" className="font-medium text-brand-600 hover:underline">
+                  Cadastrar categoria
+                </Link>
+              </p>
+            )}
           </Field>
 
           <Field label="Marca">
