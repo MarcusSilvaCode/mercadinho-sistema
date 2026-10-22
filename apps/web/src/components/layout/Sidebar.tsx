@@ -13,6 +13,7 @@ import {
   BarChart3,
   ShieldCheck,
   Settings,
+  Users,
   Store,
   X,
 } from "lucide-react";
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { to: "/caixa", label: "Caixa", icon: Wallet },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
   { to: "/auditoria", label: "Auditoria", icon: ShieldCheck },
+  { to: "/usuarios", label: "Usuários", icon: Users },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 

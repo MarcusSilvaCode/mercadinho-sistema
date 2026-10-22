@@ -303,3 +303,12 @@ export interface BackupLogEntry {
   errorMessage: string | null;
   createdAt: string;
 }
+
+export interface SystemUser {
+  id: string;
+  fullName: string;
+  username: string;
+  active: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+}

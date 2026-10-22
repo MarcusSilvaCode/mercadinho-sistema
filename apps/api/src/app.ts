@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { env } from "./config/env.js";
+import { prisma } from "./config/prisma.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { usersRouter } from "./modules/users/users.routes.js";
 import { categoriesRouter } from "./modules/categories/categories.routes.js";
@@ -54,6 +55,16 @@ export function createApp() {
   app.use("/api", apiLimiter);
 
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+  // Acessível pelo site (o nginx só repassa /api): confirma que a API alcança o banco
+  app.get("/api/health", async (_req, res) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      res.json({ status: "ok", banco: "ok" });
+    } catch {
+      res.status(503).json({ status: "erro", banco: "fora" });
+    }
+  });
 
   app.use("/api/auth", authRouter);
   app.use("/api/users", usersRouter);

@@ -99,7 +99,7 @@ export function QuickRegisterPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-4 pb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold text-ink-900">Cadastro rápido</h1>
           <p className="text-sm text-ink-500">
@@ -108,7 +108,7 @@ export function QuickRegisterPage() {
               : `${saved.length} produto${saved.length > 1 ? "s" : ""} salvo${saved.length > 1 ? "s" : ""} nesta sessão`}
           </p>
         </div>
-        <Link to="/produtos" className="text-sm font-medium text-brand-600">
+        <Link to="/produtos" className="shrink-0 whitespace-nowrap text-sm font-medium text-brand-600">
           Ver produtos
         </Link>
       </div>

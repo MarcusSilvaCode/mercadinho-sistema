@@ -15,7 +15,7 @@ const prismaMock = {
 vi.mock("../src/config/prisma.js", () => ({ prisma: prismaMock }));
 
 // Import depois do mock, para que auth.service.ts use o prisma mockado
-const { login, verifyPassword } = await import("../src/modules/auth/auth.service.js");
+const { login, verifyPassword, changeOwnPassword } = await import("../src/modules/auth/auth.service.js");
 const { AppError } = await import("../src/shared/AppError.js");
 
 const ACTIVE_USER = {
@@ -93,5 +93,42 @@ describe("auth.service — verifyPassword (desbloqueio de tela)", () => {
     prismaMock.user.findUnique.mockResolvedValue(ACTIVE_USER);
 
     await expect(verifyPassword(ACTIVE_USER.id, "errada")).rejects.toThrow("Senha incorreta.");
+  });
+});
+
+describe("auth.service — changeOwnPassword", () => {
+  it("troca a senha quando a senha atual confere, salvando hash (nunca o texto) e auditando", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(ACTIVE_USER);
+
+    await changeOwnPassword("user-1", {
+      currentPassword: "admin123",
+      newPassword: "nova-senha-forte",
+      confirmPassword: "nova-senha-forte",
+    });
+
+    const { data } = prismaMock.user.update.mock.calls[0][0] as { data: { passwordHash: string } };
+    expect(data.passwordHash).not.toBe("nova-senha-forte");
+    expect(await bcrypt.compare("nova-senha-forte", data.passwordHash)).toBe(true);
+    expect(prismaMock.auditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ action: "SENHA_REDEFINIDA" }) }),
+    );
+  });
+
+  it("rejeita quando a senha atual está errada e não altera nada", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(ACTIVE_USER);
+
+    await expect(
+      changeOwnPassword("user-1", { currentPassword: "errada", newPassword: "nova-senha", confirmPassword: "nova-senha" }),
+    ).rejects.toThrow("Senha atual incorreta.");
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it("rejeita usuário inativo", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ ...ACTIVE_USER, active: false });
+
+    await expect(
+      changeOwnPassword("user-1", { currentPassword: "admin123", newPassword: "nova-senha", confirmPassword: "nova-senha" }),
+    ).rejects.toThrow(AppError);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 });

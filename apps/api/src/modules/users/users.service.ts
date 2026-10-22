@@ -41,6 +41,10 @@ export async function createUser(input: CreateUserInput, actingUserId: string) {
 }
 
 export async function updateUser(targetId: string, input: UpdateUserInput, actingUserId: string) {
+  if (input.active === false && targetId === actingUserId) {
+    throw new AppError("Você não pode desativar o seu próprio usuário.", 400);
+  }
+
   const user = await prisma.user.update({
     where: { id: targetId },
     data: input,

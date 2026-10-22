@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { env } from "../../config/env.js";
-import { loginSchema, verifyPasswordSchema } from "./auth.schema.js";
+import { changePasswordSchema, loginSchema, verifyPasswordSchema } from "./auth.schema.js";
 import * as authService from "./auth.service.js";
 import { COOKIE_NAME } from "../../middlewares/auth.js";
 
@@ -36,4 +36,10 @@ export async function verifyPasswordHandler(req: Request, res: Response) {
   const { password } = verifyPasswordSchema.parse(req.body);
   await authService.verifyPassword(req.user!.id, password);
   res.status(200).json({ ok: true });
+}
+
+export async function changePasswordHandler(req: Request, res: Response) {
+  const input = changePasswordSchema.parse(req.body);
+  await authService.changeOwnPassword(req.user!.id, input);
+  res.status(204).send();
 }

@@ -4,7 +4,7 @@ import { prisma } from "../../config/prisma.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../shared/AppError.js";
 import { logAudit } from "../../shared/audit.js";
-import type { LoginInput } from "./auth.schema.js";
+import type { ChangePasswordInput, LoginInput } from "./auth.schema.js";
 
 const GENERIC_INVALID_CREDENTIALS = "Usuário ou senha inválidos.";
 
@@ -89,4 +89,29 @@ export async function verifyPassword(userId: string, password: string) {
   }
 
   return true;
+}
+
+/** O próprio usuário logado troca a sua senha, confirmando a atual. */
+export async function changeOwnPassword(userId: string, { currentPassword, newPassword }: ChangePasswordInput) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user || !user.active) {
+    throw new AppError("Usuário inválido.", 401);
+  }
+
+  const passwordMatches = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!passwordMatches) {
+    throw new AppError("Senha atual incorreta.", 400);
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+
+  await logAudit({
+    userId,
+    action: "SENHA_REDEFINIDA",
+    entity: "User",
+    entityId: userId,
+    details: { operacao: "troca_propria_senha" },
+  });
 }

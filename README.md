@@ -37,7 +37,7 @@ O sistema centraliza toda a operação de um mercadinho pequeno em um único lug
 - **Importação/exportação** — cadastro de produtos em massa via XLSX/CSV com prévia e validação.
 - **Backup** — automático (semanal, agendável) e manual, com histórico.
 
-Dois administradores com permissão completa (sem sistema de papéis granular nesta versão).
+**Usuários** (menu Usuários) — cadastrar funcionários, desativar/reativar, redefinir a senha de outro usuário; cada um troca a própria senha pelo ícone de chave no topo. Todos têm permissão completa (sem perfis/papéis nesta versão).
 
 ## Tecnologias
 
@@ -80,6 +80,10 @@ cp apps/api/.env.example apps/api/.env
 | `WEB_ORIGIN` | Origem do frontend, para CORS | `http://localhost:5173` |
 | `BACKUP_STORAGE_*` | Reservado para um provedor de nuvem (ver seção de Backup) | vazio |
 
+## Verificar se o sistema está no ar
+
+Abra `https://SEU-SITE/api/health`: `{"status":"ok","banco":"ok"}` = tudo certo; `banco: "fora"` (HTTP 503) = a API está no ar mas não alcança o banco (ex.: senha do banco trocada e variável não atualizada).
+
 ## Banco de dados
 
 Suba o PostgreSQL local via Docker:
@@ -118,7 +122,7 @@ Popula os dois administradores iniciais e as configurações padrão da loja:
 npm run db:seed
 ```
 
-Usuários criados: `admin1` e `admin2`, senha `admin123` — **troque em produção** (Configurações → um administrador pode redefinir a senha do outro).
+Usuários criados: `admin1` e `admin2`, senha `admin123` — **troque em produção**: entre e use o ícone de chave no topo ("Trocar minha senha").
 
 ## Execução
 

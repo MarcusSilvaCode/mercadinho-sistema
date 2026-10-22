@@ -1,8 +1,10 @@
-import { Lock, LogOut, Menu, Wallet } from "lucide-react";
+import { useState } from "react";
+import { KeyRound, Lock, LogOut, Menu, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useCashierStore } from "../../store/cashierStore";
 import { formatCurrency } from "../../lib/format";
+import { ChangePasswordModal } from "../users/UserModals";
 
 interface TopbarProps {
   onOpenSidebar: () => void;
@@ -13,6 +15,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
   const lock = useAuthStore((s) => s.lock);
   const logout = useAuthStore((s) => s.logout);
   const { session, loading } = useCashierStore();
+  const [changingPassword, setChangingPassword] = useState(false);
 
   return (
     <header className="flex h-14 items-center justify-between gap-2 border-b border-surface-border bg-surface px-3 md:px-6">
@@ -50,6 +53,14 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
         </div>
 
         <button
+          onClick={() => setChangingPassword(true)}
+          title="Trocar minha senha"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition hover:bg-surface-muted hover:text-ink-900"
+        >
+          <KeyRound size={16} />
+        </button>
+
+        <button
           onClick={lock}
           title="Bloquear tela"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition hover:bg-surface-muted hover:text-ink-900"
@@ -65,6 +76,8 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
           <LogOut size={16} />
         </button>
       </div>
+
+      {changingPassword && <ChangePasswordModal onClose={() => setChangingPassword(false)} />}
     </header>
   );
 }

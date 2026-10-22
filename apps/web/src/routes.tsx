@@ -16,6 +16,7 @@ import { AuditPage } from "./pages/AuditPage";
 import { ProductImportPage } from "./pages/ProductImportPage";
 import { QuickRegisterPage } from "./pages/QuickRegisterPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { UsersPage } from "./pages/UsersPage";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
           { path: "/caixa", element: <CashierPage /> },
           { path: "/relatorios", element: <ReportsPage /> },
           { path: "/auditoria", element: <AuditPage /> },
+          { path: "/usuarios", element: <UsersPage /> },
           {
             path: "/configuracoes",
             element: <SettingsPage />,
