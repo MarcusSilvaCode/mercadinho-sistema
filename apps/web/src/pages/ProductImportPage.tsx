@@ -76,21 +76,21 @@ export function ProductImportPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-ink-900">Importar / Exportar produtos</h1>
-        <p className="text-sm text-ink-500">Cadastre produtos em massa a partir de uma planilha, ou exporte o catálogo atual.</p>
+      <div className="mb-8">
+        <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Importar / Exportar produtos</h1>
+        <p className="mt-1 text-[15px] text-ink-500">Cadastre produtos em massa a partir de uma planilha, ou exporte o catálogo atual.</p>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-3">
         <button
           onClick={() => downloadFile("/import-export/products/template", "modelo-importacao-produtos.xlsx")}
-          className="flex items-center gap-1.5 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-surface-border px-4 h-11 text-sm font-semibold text-ink-900 transition hover:bg-brand-50 hover:border-brand-200 bg-surface"
         >
           <Download size={15} /> Baixar modelo (.xlsx)
         </button>
         <button
           onClick={() => downloadFile("/import-export/products/export", "produtos.xlsx")}
-          className="flex items-center gap-1.5 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-surface-border px-4 h-11 text-sm font-semibold text-ink-900 transition hover:bg-brand-50 hover:border-brand-200 bg-surface"
         >
           <FileSpreadsheet size={15} /> Exportar produtos (.xlsx)
         </button>
@@ -120,41 +120,41 @@ export function ProductImportPage() {
 
       {preview && (
         <div className="mt-6">
-          <div className="mb-4 flex items-center gap-4 rounded-2xl border border-surface-border bg-surface p-4 shadow-card">
+          <div className="mb-4 flex items-center gap-4 rounded-2xl border border-surface-border bg-surface p-4">
             <Summary label="Total" value={preview.summary.total} />
             <Summary label="Válidas" value={preview.summary.valid} tone="brand" />
             <Summary label="Com erro" value={preview.summary.invalid} tone={preview.summary.invalid > 0 ? "danger" : undefined} />
             <div className="ml-auto flex gap-2">
               <button
                 onClick={resetImport}
-                className="rounded-lg border border-surface-border px-4 py-2 text-sm font-medium text-ink-700 hover:bg-surface-muted"
+                className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-surface-border px-4 h-11 text-sm font-semibold text-ink-900 hover:bg-brand-50 hover:border-brand-200 bg-surface"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCommit}
                 disabled={committing || preview.summary.valid === 0}
-                className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {committing ? "Importando..." : `Confirmar importação (${preview.summary.valid})`}
               </button>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+          <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface">
             <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
               <thead>
-                <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-                  <th className="px-4 py-3">Linha</th>
-                  <th className="px-4 py-3">Produto</th>
-                  <th className="px-4 py-3">Código de barras</th>
-                  <th className="px-4 py-3">Status</th>
+                <tr className="border-b border-surface-border text-left text-xs font-semibold uppercase tracking-[0.06em] text-ink-500">
+                  <th className="px-5 py-3.5">Linha</th>
+                  <th className="px-5 py-3.5">Produto</th>
+                  <th className="px-5 py-3.5">Código de barras</th>
+                  <th className="px-5 py-3.5">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.rows.map((row) => (
-                  <tr key={row.rowNumber} className="border-b border-surface-border last:border-0">
+                  <tr key={row.rowNumber} className="border-b border-surface-border last:border-0 transition-colors hover:bg-surface-muted/60">
                     <td className="px-4 py-2.5 text-ink-500">{row.rowNumber}</td>
                     <td className="px-4 py-2.5 text-ink-900">{row.data?.name ?? "—"}</td>
                     <td className="px-4 py-2.5 font-money text-ink-500">{row.data?.barcode ?? "—"}</td>
@@ -180,7 +180,7 @@ export function ProductImportPage() {
       )}
 
       {commitResult && (
-        <div className="mt-6 rounded-2xl border border-surface-border bg-surface p-6 shadow-card">
+        <div className="mt-6 rounded-2xl border border-surface-border bg-surface p-6">
           <h2 className="mb-2 text-base font-semibold text-ink-900">Importação concluída</h2>
           <p className="mb-4 text-sm text-ink-500">
             <span className="font-semibold text-brand-600">{commitResult.created}</span> produto(s) criado(s)
@@ -206,7 +206,7 @@ export function ProductImportPage() {
 
           <button
             onClick={resetImport}
-            className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
+            className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white hover:bg-brand-600"
           >
             Nova importação
           </button>

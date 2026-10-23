@@ -1,12 +1,28 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { FileSpreadsheet, Pencil, Plus, ScanLine, Search } from "lucide-react";
+import { FileSpreadsheet, Package, Pencil, Plus, ScanLine, Search } from "lucide-react";
 import { api } from "../lib/api";
 import { formatCurrency } from "../lib/format";
 import type { Category, Product, ProductListResponse } from "../lib/types";
 import { ProductFormModal } from "../components/products/ProductFormModal";
+import { Button, ButtonLink, IconButton } from "../components/ui/Button";
+import { Input, Select } from "../components/ui/Field";
+import { Badge, EmptyState, PageHeader, Skeleton } from "../components/ui/Layout";
+import { Pagination, TableCard, tdClass, thClass, theadRowClass, trClass } from "../components/ui/Table";
+import { toast } from "../components/ui/Toast";
 
 const PAGE_SIZE = 20;
+
+function stockTone(p: Product): "danger" | "warning" | "normal" {
+  if (p.stockQuantity <= 0) return "danger";
+  if (p.stockQuantity <= p.minStockQuantity) return "warning";
+  return "normal";
+}
+
+const stockText = {
+  danger: "font-semibold text-danger-500",
+  warning: "font-semibold text-amber-500",
+  normal: "text-ink-900",
+};
 
 export function ProductsPage() {
   const [items, setItems] = useState<Product[]>([]);
@@ -28,18 +44,21 @@ export function ProductsPage() {
 
   async function load() {
     setLoading(true);
-    const { data } = await api.get<ProductListResponse>("/products", {
-      params: {
-        search: search || undefined,
-        categoryId: categoryId || undefined,
-        active: statusFilter === "" ? undefined : statusFilter,
-        page,
-        pageSize: PAGE_SIZE,
-      },
-    });
-    setItems(data.items);
-    setTotal(data.total);
-    setLoading(false);
+    try {
+      const { data } = await api.get<ProductListResponse>("/products", {
+        params: {
+          search: search || undefined,
+          categoryId: categoryId || undefined,
+          active: statusFilter === "" ? undefined : statusFilter,
+          page,
+          pageSize: PAGE_SIZE,
+        },
+      });
+      setItems(data.items);
+      setTotal(data.total);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -59,62 +78,58 @@ export function ProductsPage() {
   }
 
   function handleSaved() {
+    toast.success(editing ? "Produto atualizado." : "Produto cadastrado.");
     setModalOpen(false);
     load();
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const filtering = Boolean(search || categoryId || statusFilter);
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-ink-900">Produtos</h1>
-          <p className="text-sm text-ink-500">{total} produto(s) cadastrado(s)</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            to="/produtos/cadastro-rapido"
-            className="flex items-center gap-1.5 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
-          >
-            <ScanLine size={15} /> Cadastro rápido
-          </Link>
-          <Link
-            to="/produtos/importar"
-            className="flex items-center gap-1.5 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
-          >
-            <FileSpreadsheet size={15} /> Importar / Exportar
-          </Link>
-          <button
-            onClick={openCreate}
-            className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600"
-          >
-            <Plus size={16} /> Novo produto
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Produtos"
+        description={loading && items.length === 0 ? "Carregando..." : `${total} ${total === 1 ? "produto cadastrado" : "produtos cadastrados"}`}
+        actions={
+          <>
+            <ButtonLink to="/produtos/cadastro-rapido">
+              <ScanLine size={16} /> Cadastro rápido
+            </ButtonLink>
+            <ButtonLink to="/produtos/importar">
+              <FileSpreadsheet size={16} /> Importar
+            </ButtonLink>
+            <Button onClick={openCreate}>
+              <Plus size={18} /> Novo produto
+            </Button>
+          </>
+        }
+      />
 
-      <div className="mb-4 flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[240px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-300" />
-          <input
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,1fr)_220px_200px]">
+        <div className="relative col-span-2 sm:col-span-1">
+          <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-300" />
+          <label htmlFor="product-search" className="sr-only">
+            Buscar produto
+          </label>
+          <Input
+            id="product-search"
             value={search}
             onChange={(e) => {
               setPage(1);
               setSearch(e.target.value);
             }}
-            placeholder="Nome, código de barras, SKU ou marca..."
-            className="w-full rounded-lg border border-surface-border py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            placeholder="Buscar por nome, código, SKU ou marca"
+            className="pl-10"
           />
         </div>
-
-        <select
+        <Select
+          aria-label="Filtrar por categoria"
           value={categoryId}
           onChange={(e) => {
             setPage(1);
             setCategoryId(e.target.value);
           }}
-          className="rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none focus:border-brand-500"
         >
           <option value="">Todas as categorias</option>
           {categories.map((c) => (
@@ -122,136 +137,134 @@ export function ProductsPage() {
               {c.name}
             </option>
           ))}
-        </select>
-
-        <select
+        </Select>
+        <Select
+          aria-label="Filtrar por situação"
           value={statusFilter}
           onChange={(e) => {
             setPage(1);
             setStatusFilter(e.target.value);
           }}
-          className="rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none focus:border-brand-500"
         >
-          <option value="">Todos os status</option>
-          <option value="true">Ativos</option>
-          <option value="false">Inativos</option>
-        </select>
+          <option value="">Ativos e inativos</option>
+          <option value="true">Só ativos</option>
+          <option value="false">Só inativos</option>
+        </Select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
-        <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3">Produto</th>
-              <th className="px-4 py-3">Categoria</th>
-              <th className="px-4 py-3">Código / SKU</th>
-              <th className="px-4 py-3 text-right">Estoque</th>
-              <th className="px-4 py-3 text-right">Preço</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink-500">
-                  Carregando...
-                </td>
-              </tr>
-            )}
-            {!loading && items.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink-500">
-                  Nenhum produto encontrado.
-                </td>
-              </tr>
-            )}
-            {items.map((product) => {
-              const stockLow = product.stockQuantity > 0 && product.stockQuantity <= product.minStockQuantity;
-              const stockOut = product.stockQuantity === 0;
-              const stockNegative = product.stockQuantity < 0;
+      <TableCard footer={<Pagination page={page} totalPages={totalPages} onChange={setPage} />}>
+        {loading && items.length === 0 ? (
+          <Skeleton rows={6} />
+        ) : items.length === 0 ? (
+          <EmptyState
+            icon={Package}
+            title={filtering ? "Nenhum produto encontrado" : "Nenhum produto cadastrado ainda"}
+            description={
+              filtering
+                ? "Tente outro nome ou limpe os filtros."
+                : "Cadastre bipando pelo celular ou importe uma planilha."
+            }
+            action={
+              !filtering && (
+                <ButtonLink to="/produtos/cadastro-rapido" variant="primary">
+                  <ScanLine size={16} /> Começar pelo cadastro rápido
+                </ButtonLink>
+              )
+            }
+          />
+        ) : (
+          <>
+            {/* Celular: lista legível com o que importa (nome, preço, estoque) */}
+            <ul className="divide-y divide-surface-border md:hidden">
+              {items.map((product) => {
+                const tone = stockTone(product);
+                return (
+                  <li key={product.id}>
+                    <button
+                      type="button"
+                      onClick={() => openEdit(product)}
+                      className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-muted"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-ink-900">{product.name}</p>
+                        <p className="mt-0.5 truncate text-sm text-ink-500">
+                          {product.category.name} · <span className="font-code">{product.barcode}</span>
+                        </p>
+                        {!product.active && (
+                          <div className="mt-1">
+                            <Badge>Inativo</Badge>
+                          </div>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-display text-lg font-bold text-ink-900 font-money">
+                          {formatCurrency(product.salePrice)}
+                        </p>
+                        <p className={`text-sm font-money ${stockText[tone]}`}>{product.stockQuantity} em estoque</p>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
 
-              return (
-                <tr key={product.id} className="border-b border-surface-border last:border-0">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-ink-900">{product.name}</p>
-                    {product.brand && <p className="text-xs text-ink-500">{product.brand}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-ink-500">{product.category.name}</td>
-                  <td className="px-4 py-3 text-ink-500">
-                    <p className="font-money text-xs">{product.barcode}</p>
-                    <p className="text-xs">{product.sku}</p>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span
-                      className={`font-money text-sm ${
-                        stockNegative
-                          ? "font-semibold text-danger-500"
-                          : stockOut
-                            ? "text-danger-500"
-                            : stockLow
-                              ? "font-semibold text-amber-500"
-                              : "text-ink-900"
-                      }`}
-                    >
-                      {product.stockQuantity}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-money text-ink-900">
-                    {formatCurrency(product.salePrice)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        product.active ? "bg-brand-50 text-brand-600" : "bg-surface-muted text-ink-500"
-                      }`}
-                    >
-                      {product.active ? "Ativo" : "Inativo"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => openEdit(product)}
-                        title="Editar"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted hover:text-ink-900"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                    </div>
-                  </td>
+            {/* Computador: tabela completa */}
+            <table className="hidden w-full text-[15px] md:table">
+              <thead>
+                <tr className={theadRowClass}>
+                  <th className={thClass}>Produto</th>
+                  <th className={thClass}>Categoria</th>
+                  <th className={thClass}>Código / SKU</th>
+                  <th className={`${thClass} text-right`}>Estoque</th>
+                  <th className={`${thClass} text-right`}>Preço</th>
+                  <th className={`${thClass} w-16`}>
+                    <span className="sr-only">Ações</span>
+                  </th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-surface-border px-4 py-3 text-sm text-ink-500">
-            <span>
-              Página {page} de {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Anterior
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Próxima
-              </button>
-            </div>
-          </div>
+              </thead>
+              <tbody className={loading ? "opacity-60" : ""}>
+                {items.map((product) => {
+                  const tone = stockTone(product);
+                  return (
+                    <tr key={product.id} className={trClass}>
+                      <td className={tdClass}>
+                        <p className="font-semibold text-ink-900">
+                          {product.name}
+                          {!product.active && (
+                            <span className="ml-2 align-middle">
+                              <Badge>Inativo</Badge>
+                            </span>
+                          )}
+                        </p>
+                        {product.brand && <p className="text-sm text-ink-500">{product.brand}</p>}
+                      </td>
+                      <td className={`${tdClass} text-ink-700`}>{product.category.name}</td>
+                      <td className={`${tdClass} text-sm text-ink-500`}>
+                        <p className="font-code">{product.barcode}</p>
+                        <p className="text-xs">{product.sku}</p>
+                      </td>
+                      <td className={`${tdClass} text-right font-money ${stockText[tone]}`}>
+                        {product.stockQuantity}
+                        {tone !== "normal" && (
+                          <span className="sr-only">{tone === "danger" ? " (sem estoque)" : " (estoque baixo)"}</span>
+                        )}
+                      </td>
+                      <td className={`${tdClass} text-right font-semibold text-ink-900 font-money`}>
+                        {formatCurrency(product.salePrice)}
+                      </td>
+                      <td className={`${tdClass} text-right`}>
+                        <IconButton label={`Editar ${product.name}`} onClick={() => openEdit(product)}>
+                          <Pencil size={16} />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
         )}
-      </div>
+      </TableCard>
 
       {modalOpen && (
         <ProductFormModal product={editing} onClose={() => setModalOpen(false)} onSaved={handleSaved} />

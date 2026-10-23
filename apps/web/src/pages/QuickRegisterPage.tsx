@@ -7,6 +7,8 @@ import type { Category, Product, StoreSettings, UnitOfMeasure } from "../lib/typ
 import { UNIT_LABELS, formatCurrency } from "../lib/format";
 import { parseMoneyInput, suggestSalePrice } from "../lib/pricing";
 import { BarcodeScanner } from "../components/products/BarcodeScanner";
+import { Modal, ModalActions } from "../components/ui/Modal";
+import { ErrorMessage, Input } from "../components/ui/Field";
 
 /**
  * Cadastro rápido pelo celular: bipa com a câmera → confere/preenche → salva → próximo.
@@ -101,8 +103,8 @@ export function QuickRegisterPage() {
     <div className="mx-auto max-w-md space-y-4 pb-8">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-ink-900">Cadastro rápido</h1>
-          <p className="text-sm text-ink-500">
+          <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Cadastro rápido</h1>
+          <p className="mt-1 text-[15px] text-ink-500">
             {saved.length === 0
               ? "Aponte a câmera para o código de barras."
               : `${saved.length} produto${saved.length > 1 ? "s" : ""} salvo${saved.length > 1 ? "s" : ""} nesta sessão`}
@@ -135,7 +137,7 @@ export function QuickRegisterPage() {
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
               />
-              <button type="submit" className="rounded-lg bg-brand-500 px-4 text-sm font-medium text-white">
+              <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 text-sm font-semibold text-white">
                 OK
               </button>
             </form>
@@ -149,7 +151,7 @@ export function QuickRegisterPage() {
           )}
 
           {saved.length > 0 && (
-            <div className="rounded-2xl border border-surface-border bg-surface p-4 shadow-card">
+            <div className="rounded-2xl border border-surface-border bg-surface p-4">
               <h2 className="mb-2 text-sm font-semibold text-ink-900">Últimos salvos</h2>
               <ul className="divide-y divide-surface-border text-sm">
                 {saved.map((item, i) => (
@@ -168,7 +170,7 @@ export function QuickRegisterPage() {
       )}
 
       {step.kind === "loading" && (
-        <div className="rounded-2xl border border-surface-border bg-surface p-8 text-center text-sm text-ink-500 shadow-card">
+        <div className="rounded-2xl border border-surface-border bg-surface p-8 text-center text-sm text-ink-500">
           Buscando <span className="font-money">{step.barcode}</span>...
         </div>
       )}
@@ -249,16 +251,12 @@ function NewProductForm({
     }
   }
 
-  async function handleNewCategory() {
-    const categoryName = window.prompt("Nome da nova categoria:")?.trim();
-    if (!categoryName) return;
-    try {
-      const { data } = await api.post<{ category: Category }>("/categories", { name: categoryName });
-      onCategoryCreated(data.category);
-      setCategoryId(data.category.id);
-    } catch (err) {
-      setError(getApiErrorMessage(err));
-    }
+  const [newCategoryOpen, setNewCategoryOpen] = useState(false);
+
+  function handleCategoryCreated(category: Category) {
+    onCategoryCreated(category);
+    setCategoryId(category.id);
+    setNewCategoryOpen(false);
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -300,7 +298,7 @@ function NewProductForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-surface-border bg-surface p-4 shadow-card">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-surface-border bg-surface p-4">
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-brand-600">Produto novo</p>
         <p className="font-money text-sm text-ink-500">{barcode}</p>
@@ -334,7 +332,7 @@ function NewProductForm({
           </select>
           <button
             type="button"
-            onClick={handleNewCategory}
+            onClick={() => setNewCategoryOpen(true)}
             title="Nova categoria"
             className="flex shrink-0 items-center gap-1 rounded-lg border border-surface-border px-3 text-sm font-medium text-ink-700"
           >
@@ -408,6 +406,9 @@ function NewProductForm({
         submitting={submitting}
         disabled={name.trim().length < 2 || !validCategoryId || !costPrice || !salePrice}
       />
+      {newCategoryOpen && (
+        <NewCategoryModal onClose={() => setNewCategoryOpen(false)} onCreated={handleCategoryCreated} />
+      )}
     </form>
   );
 }
@@ -459,7 +460,7 @@ function ExistingProductForm({ product, onCancel, onSaved }: ExistingProductForm
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-surface-border bg-surface p-4 shadow-card">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-surface-border bg-surface p-4">
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-amber-500">Já cadastrado</p>
         <p className="text-base font-semibold text-ink-900">{product.name}</p>
@@ -525,7 +526,7 @@ function FormActions({
       <button
         type="submit"
         disabled={submitting || disabled}
-        className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex items-center justify-center gap-2 flex-1 rounded-[10px] bg-brand-500 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Check size={18} /> {submitting ? "Salvando..." : "Salvar e próximo"}
       </button>
@@ -534,7 +535,7 @@ function FormActions({
 }
 
 const inputClass =
-  "w-full rounded-lg border border-surface-border px-3 py-3 text-base outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100";
+  "h-12 w-full rounded-[10px] border border-surface-border bg-surface px-3 text-base text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -542,5 +543,45 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label className="mb-1.5 block text-sm font-medium text-ink-700">{label}</label>
       {children}
     </div>
+  );
+}
+
+function NewCategoryModal({ onClose, onCreated }: { onClose: () => void; onCreated: (c: Category) => void }) {
+  const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    e.stopPropagation(); // não enviar o formulário do produto que está por trás
+    setError(null);
+    setSubmitting(true);
+    try {
+      const { data } = await api.post<{ category: Category }>("/categories", { name: name.trim() });
+      onCreated(data.category);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Modal title="Nova categoria" size="sm" onClose={onClose}>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <label htmlFor="new-category-name" className="sr-only">
+          Nome da categoria
+        </label>
+        <Input
+          id="new-category-name"
+          autoFocus
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ex.: Bebidas, Padaria, Limpeza"
+        />
+        <ErrorMessage>{error}</ErrorMessage>
+        <ModalActions onCancel={onClose} submitLabel="Criar categoria" submitting={submitting} disabled={name.trim().length < 2} />
+      </form>
+    </Modal>
   );
 }

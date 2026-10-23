@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { KeyRound, Lock, LogOut, Menu, Wallet } from "lucide-react";
+import { KeyRound, Lock, LogOut, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useCashierStore } from "../../store/cashierStore";
-import { formatCurrency } from "../../lib/format";
+import { formatTime } from "../../lib/format";
 import { ChangePasswordModal } from "../users/UserModals";
+import { IconButton } from "../ui/Button";
 
 interface TopbarProps {
   onOpenSidebar: () => void;
@@ -18,63 +19,45 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
   const [changingPassword, setChangingPassword] = useState(false);
 
   return (
-    <header className="flex h-14 items-center justify-between gap-2 border-b border-surface-border bg-surface px-3 md:px-6">
+    <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-surface-border bg-surface px-3 md:px-8">
       <div className="flex min-w-0 items-center gap-2">
-        <button
-          onClick={onOpenSidebar}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted md:hidden"
-        >
-          <Menu size={18} />
-        </button>
+        <IconButton label="Abrir menu" onClick={onOpenSidebar} className="md:hidden">
+          <Menu size={20} />
+        </IconButton>
 
+        {/* Status do caixa: aberto/fechado e desde quando — o valor fica na tela do Caixa */}
         <Link
           to="/caixa"
-          className={`flex min-w-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition md:px-3 ${
-            session
-              ? "bg-brand-50 text-brand-600 hover:bg-brand-100"
-              : "bg-surface-muted text-ink-500 hover:bg-surface-border/60"
-          }`}
+          className="flex min-w-0 items-center gap-2 rounded-full border border-surface-border px-3 py-1.5 text-sm font-medium text-ink-700 transition hover:border-brand-200 hover:bg-brand-50"
         >
-          <Wallet size={15} className="shrink-0" />
+          <span
+            className={`h-2 w-2 shrink-0 rounded-full ${loading ? "bg-ink-300" : session ? "bg-success-500" : "bg-danger-500"}`}
+            aria-hidden="true"
+          />
           <span className="truncate">
             {loading
               ? "Verificando caixa..."
               : session
-                ? `Caixa aberto${" · " + formatCurrency(session.openingAmount)}`
+                ? <>Caixa aberto<span className="hidden sm:inline"> · desde {formatTime(session.openedAt)}</span></>
                 : "Caixa fechado"}
           </span>
         </Link>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 md:gap-3">
-        <div className="hidden text-right sm:block">
-          <p className="text-sm font-medium leading-tight text-ink-900">{user?.fullName}</p>
+      <div className="flex shrink-0 items-center gap-1">
+        <div className="mr-2 hidden text-right sm:block">
+          <p className="text-sm font-semibold leading-tight text-ink-900">{user?.fullName}</p>
           <p className="text-xs leading-tight text-ink-500">@{user?.username}</p>
         </div>
-
-        <button
-          onClick={() => setChangingPassword(true)}
-          title="Trocar minha senha"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition hover:bg-surface-muted hover:text-ink-900"
-        >
-          <KeyRound size={16} />
-        </button>
-
-        <button
-          onClick={lock}
-          title="Bloquear tela"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition hover:bg-surface-muted hover:text-ink-900"
-        >
-          <Lock size={16} />
-        </button>
-
-        <button
-          onClick={() => logout()}
-          title="Sair"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition hover:bg-danger-50 hover:text-danger-500"
-        >
-          <LogOut size={16} />
-        </button>
+        <IconButton label="Trocar minha senha" onClick={() => setChangingPassword(true)}>
+          <KeyRound size={18} />
+        </IconButton>
+        <IconButton label="Bloquear tela" onClick={lock}>
+          <Lock size={18} />
+        </IconButton>
+        <IconButton label="Sair" tone="danger" onClick={() => logout()}>
+          <LogOut size={18} />
+        </IconButton>
       </div>
 
       {changingPassword && <ChangePasswordModal onClose={() => setChangingPassword(false)} />}

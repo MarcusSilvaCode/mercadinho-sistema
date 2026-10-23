@@ -103,9 +103,9 @@ export function PurchasesPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-ink-900">Entrada de mercadorias</h1>
-        <p className="text-sm text-ink-500">
+      <div className="mb-8">
+        <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Entrada de mercadorias</h1>
+        <p className="mt-1 text-[15px] text-ink-500">
           Registre a chegada de produtos — o estoque e o preço de custo são atualizados automaticamente.
         </p>
       </div>
@@ -128,38 +128,38 @@ export function PurchasesPage() {
         </div>
       )}
 
-      <div className="mb-6 rounded-2xl border border-surface-border bg-surface p-4 shadow-card">
-        <div className="overflow-x-auto">
-        <div className="min-w-[680px]">
-        <div className="mb-3 grid grid-cols-12 gap-2 px-1 text-xs font-medium uppercase tracking-wide text-ink-500">
-          <span className="col-span-4">Produto</span>
-          <span className="col-span-2">Quantidade</span>
-          <span className="col-span-2">Custo unitário</span>
-          <span className="col-span-2">Lote</span>
-          <span className="col-span-2">Validade</span>
+      <div className="mb-6 rounded-2xl border border-surface-border bg-surface p-4">
+        <div className="mb-2 hidden gap-2 px-1 text-xs font-semibold uppercase tracking-[0.06em] text-ink-500 lg:grid lg:grid-cols-[minmax(0,2.4fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(160px,1.1fr)_40px]">
+          <span>Produto</span>
+          <span>Quantidade</span>
+          <span>Custo unitário</span>
+          <span>Lote</span>
+          <span>Validade</span>
+          <span className="sr-only">Remover</span>
         </div>
 
         <div className="space-y-2">
           {lines.map((line) => (
-            <div key={line.key} className="grid grid-cols-12 items-start gap-2">
-              <div className="relative col-span-4">
+            <div key={line.key} className="grid grid-cols-2 items-start gap-2 rounded-xl border border-surface-border p-3 lg:border-0 lg:p-0 lg:grid-cols-[minmax(0,2.4fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(160px,1.1fr)_40px]">
+              <div className="relative col-span-2 lg:col-span-1">
                 <input
                   value={line.productId ? line.productName : line.productName}
                   onChange={(e) => {
                     updateLine(line.key, { productName: e.target.value, productId: "" });
                     searchProduct(line.key, e.target.value);
                   }}
-                  placeholder="Buscar produto..."
-                  className="w-full rounded-lg border border-surface-border px-3 py-2 text-sm outline-none focus:border-brand-500"
+                  placeholder="Buscar produto pelo nome ou código"
+                  aria-label="Produto"
+                  className="h-11 w-full min-w-0 rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
                 />
                 {productQuery[line.key]?.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-surface-border bg-surface shadow-card">
+                  <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-surface-border bg-surface py-1 shadow-pop">
                     {productQuery[line.key].map((p) => (
                       <button
                         key={p.id}
                         type="button"
                         onClick={() => selectProduct(line.key, p)}
-                        className="block w-full px-3 py-2 text-left text-sm hover:bg-surface-muted"
+                        className="block w-full px-3 py-2.5 text-left text-[15px] hover:bg-brand-50"
                       >
                         {p.name} <span className="text-xs text-ink-500">({p.sku})</span>
                       </button>
@@ -173,7 +173,8 @@ export function PurchasesPage() {
                 min={1}
                 value={line.quantity}
                 onChange={(e) => updateLine(line.key, { quantity: e.target.value })}
-                className="col-span-2 rounded-lg border border-surface-border px-3 py-2 font-money text-sm outline-none focus:border-brand-500"
+                aria-label="Quantidade"
+                className="h-11 w-full min-w-0 rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 font-money"
               />
 
               <input
@@ -182,36 +183,37 @@ export function PurchasesPage() {
                 min={0}
                 value={line.unitCost}
                 onChange={(e) => updateLine(line.key, { unitCost: e.target.value })}
-                placeholder="0,00"
-                className="col-span-2 rounded-lg border border-surface-border px-3 py-2 font-money text-sm outline-none focus:border-brand-500"
+                placeholder="Custo unitário"
+                aria-label="Custo unitário"
+                className="h-11 w-full min-w-0 rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 font-money"
               />
 
               <input
                 value={line.batch}
                 onChange={(e) => updateLine(line.key, { batch: e.target.value })}
-                placeholder="Opcional"
-                className="col-span-2 rounded-lg border border-surface-border px-3 py-2 text-sm outline-none focus:border-brand-500"
+                placeholder="Lote (opcional)"
+                aria-label="Lote"
+                className="h-11 w-full min-w-0 rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
 
-              <div className="col-span-2 flex gap-1">
-                <input
-                  type="date"
-                  value={line.expirationDate}
-                  onChange={(e) => updateLine(line.key, { expirationDate: e.target.value })}
-                  className="flex-1 rounded-lg border border-surface-border px-2 py-2 text-sm outline-none focus:border-brand-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeLine(line.key)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-400 hover:bg-danger-50 hover:text-danger-500"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
+              <input
+                type="date"
+                aria-label="Validade"
+                value={line.expirationDate}
+                onChange={(e) => updateLine(line.key, { expirationDate: e.target.value })}
+                className="h-11 w-full min-w-0 rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-300 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              />
+              <button
+                type="button"
+                aria-label="Remover linha"
+                title="Remover linha"
+                onClick={() => removeLine(line.key)}
+                className="flex h-11 w-full items-center justify-center rounded-[10px] text-ink-500 hover:bg-danger-50 hover:text-danger-500 lg:w-10"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ))}
-        </div>
-        </div>
         </div>
 
         <button
@@ -229,7 +231,7 @@ export function PurchasesPage() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Truck size={16} />
             {submitting ? "Registrando..." : "Registrar entrada"}
@@ -242,15 +244,15 @@ export function PurchasesPage() {
       </div>
 
       <h2 className="mb-3 text-sm font-semibold text-ink-900">Últimas entradas</h2>
-      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface">
         <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
           <thead>
-            <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3">Data</th>
-              <th className="px-4 py-3">Usuário</th>
-              <th className="px-4 py-3">Itens</th>
-              <th className="px-4 py-3 text-right">Total</th>
+            <tr className="border-b border-surface-border text-left text-xs font-semibold uppercase tracking-[0.06em] text-ink-500">
+              <th className="px-5 py-3.5">Data</th>
+              <th className="px-5 py-3.5">Usuário</th>
+              <th className="px-5 py-3.5">Itens</th>
+              <th className="px-5 py-3.5 text-right">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -262,13 +264,13 @@ export function PurchasesPage() {
               </tr>
             )}
             {history.map((purchase) => (
-              <tr key={purchase.id} className="border-b border-surface-border last:border-0">
-                <td className="px-4 py-3 text-ink-500">{formatDate(purchase.createdAt)}</td>
-                <td className="px-4 py-3 text-ink-500">{purchase.user.fullName}</td>
-                <td className="px-4 py-3 text-ink-900">
+              <tr key={purchase.id} className="border-b border-surface-border last:border-0 transition-colors hover:bg-surface-muted/60">
+                <td className="px-5 py-3.5 text-ink-500">{formatDate(purchase.createdAt)}</td>
+                <td className="px-5 py-3.5 text-ink-500">{purchase.user.fullName}</td>
+                <td className="px-5 py-3.5 text-ink-900">
                   {purchase.items.map((i) => i.product.name).join(", ")}
                 </td>
-                <td className="px-4 py-3 text-right font-money text-ink-900">
+                <td className="px-5 py-3.5 text-right font-money text-ink-900">
                   {formatCurrency(purchase.totalValue)}
                 </td>
               </tr>

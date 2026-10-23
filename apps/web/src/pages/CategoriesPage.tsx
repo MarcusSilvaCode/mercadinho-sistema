@@ -47,14 +47,14 @@ export function CategoriesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-ink-900">Categorias</h1>
-          <p className="text-sm text-ink-500">Organize os produtos por categoria.</p>
+          <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Categorias</h1>
+          <p className="mt-1 text-[15px] text-ink-500">Organize os produtos por categoria.</p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600"
         >
           <Plus size={16} /> Nova categoria
         </button>
@@ -70,15 +70,15 @@ export function CategoriesPage() {
         Mostrar inativas
       </label>
 
-      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface">
         <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
           <thead>
-            <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3">Nome</th>
-              <th className="px-4 py-3">Produtos vinculados</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Ações</th>
+            <tr className="border-b border-surface-border text-left text-xs font-semibold uppercase tracking-[0.06em] text-ink-500">
+              <th className="px-5 py-3.5">Nome</th>
+              <th className="px-5 py-3.5">Produtos vinculados</th>
+              <th className="px-5 py-3.5">Status</th>
+              <th className="px-5 py-3.5 text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -97,10 +97,10 @@ export function CategoriesPage() {
               </tr>
             )}
             {categories.map((category) => (
-              <tr key={category.id} className="border-b border-surface-border last:border-0">
-                <td className="px-4 py-3 font-medium text-ink-900">{category.name}</td>
-                <td className="px-4 py-3 text-ink-500">{category._count?.products ?? 0}</td>
-                <td className="px-4 py-3">
+              <tr key={category.id} className="border-b border-surface-border last:border-0 transition-colors hover:bg-surface-muted/60">
+                <td className="px-5 py-3.5 font-medium text-ink-900">{category.name}</td>
+                <td className="px-5 py-3.5 text-ink-500">{category._count?.products ?? 0}</td>
+                <td className="px-5 py-3.5">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       category.active ? "bg-brand-50 text-brand-600" : "bg-surface-muted text-ink-500"
@@ -109,19 +109,19 @@ export function CategoriesPage() {
                     {category.active ? "Ativa" : "Inativa"}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   <div className="flex justify-end gap-1">
                     <button
                       onClick={() => openEdit(category)}
                       title="Editar"
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted hover:text-ink-900"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 transition hover:bg-brand-50 hover:text-brand-600"
                     >
                       <Pencil size={15} />
                     </button>
                     <button
                       onClick={() => toggleActive(category)}
                       title={category.active ? "Inativar" : "Ativar"}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted hover:text-ink-900"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 transition hover:bg-brand-50 hover:text-brand-600"
                     >
                       <Power size={15} />
                     </button>

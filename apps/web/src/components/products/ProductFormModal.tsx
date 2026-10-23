@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { api, getApiErrorMessage } from "../../lib/api";
 import type { Category, Product, UnitOfMeasure } from "../../lib/types";
 import { UNIT_LABELS } from "../../lib/format";
+import { inputClass } from "../ui/Field";
 
 interface ProductFormModalProps {
   product?: Product | null;
@@ -81,13 +82,13 @@ export function ProductFormModal({ product, prefilledBarcode, onClose, onSaved }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-surface-border bg-surface p-6 shadow-card">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/40 backdrop-blur-[2px] sm:items-center sm:p-4">
+      <div role="dialog" aria-modal="true" className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-surface p-6 shadow-pop sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-ink-900">
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">
             {isEditing ? "Editar produto" : "Novo produto"}
           </h2>
-          <button onClick={onClose} className="text-ink-300 hover:text-ink-500">
+          <button type="button" onClick={onClose} aria-label="Fechar" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-lg text-ink-300 hover:bg-surface-muted hover:text-ink-700">
             <X size={18} />
           </button>
         </div>
@@ -214,14 +215,14 @@ export function ProductFormModal({ product, prefilledBarcode, onClose, onSaved }
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
+              className="inline-flex items-center justify-center gap-2 flex-1 rounded-[10px] border border-surface-border px-4 h-11 text-sm font-semibold text-ink-900 transition hover:bg-brand-50 hover:border-brand-200 bg-surface"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={submitting || !name || !categoryId || !barcode}
-              className="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 flex-1 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? "Salvando..." : "Salvar produto"}
             </button>
@@ -232,8 +233,6 @@ export function ProductFormModal({ product, prefilledBarcode, onClose, onSaved }
   );
 }
 
-const inputClass =
-  "w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100";
 
 function Field({
   label,

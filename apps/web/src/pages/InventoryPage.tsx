@@ -25,8 +25,8 @@ export function InventoryPage() {
     return (
       <div className="flex h-full min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-dashed border-surface-border text-center">
         <ClipboardList className="mb-3 text-ink-300" size={32} />
-        <h1 className="mb-1 text-lg font-semibold text-ink-900">Nenhum inventário em andamento</h1>
-        <p className="mb-4 max-w-sm text-sm text-ink-500">
+        <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Nenhum inventário em andamento</h1>
+        <p className="mb-5 mt-2 max-w-sm text-[15px] text-ink-500">
           Inicie um novo inventário para contar os produtos com o leitor de código de barras ou buscando por
           nome/SKU.
         </p>
@@ -34,7 +34,7 @@ export function InventoryPage() {
         <button
           onClick={handleStart}
           disabled={starting}
-          className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-50"
         >
           {starting ? "Iniciando..." : "Novo inventário"}
         </button>
@@ -112,15 +112,15 @@ function InventoryCounting({
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-ink-900">Inventário em andamento</h1>
-          <p className="text-sm text-ink-500">{inventory.items.length} produto(s) contado(s) até agora</p>
+          <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Inventário em andamento</h1>
+          <p className="mt-1 text-[15px] text-ink-500">{inventory.items.length} produto(s) contado(s) até agora</p>
         </div>
         <button
           onClick={handleFinish}
           disabled={finishing || inventory.items.length === 0}
-          className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <CheckCircle2 size={16} />
           {finishing ? "Finalizando..." : "Finalizar inventário"}
@@ -138,7 +138,7 @@ function InventoryCounting({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Bipe o código de barras ou digite nome/SKU..."
-          className="w-full rounded-lg border border-surface-border py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="w-full rounded-[10px] border border-surface-border h-11 pl-9 pr-3 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
         />
       </form>
 
@@ -166,7 +166,7 @@ function InventoryCounting({
                 />
                 <button
                   onClick={() => submitCount(product.id)}
-                  className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600"
+                  className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-3 h-11 text-sm font-semibold text-white hover:bg-brand-600"
                 >
                   Registrar
                 </button>
@@ -176,15 +176,15 @@ function InventoryCounting({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface">
         <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
           <thead>
-            <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3">Produto</th>
-              <th className="px-4 py-3 text-right">Esperado</th>
-              <th className="px-4 py-3 text-right">Contado</th>
-              <th className="px-4 py-3 text-right">Diferença</th>
+            <tr className="border-b border-surface-border text-left text-xs font-semibold uppercase tracking-[0.06em] text-ink-500">
+              <th className="px-5 py-3.5">Produto</th>
+              <th className="px-5 py-3.5 text-right">Esperado</th>
+              <th className="px-5 py-3.5 text-right">Contado</th>
+              <th className="px-5 py-3.5 text-right">Diferença</th>
             </tr>
           </thead>
           <tbody>
@@ -196,14 +196,14 @@ function InventoryCounting({
               </tr>
             )}
             {inventory.items.map((item) => (
-              <tr key={item.id} className="border-b border-surface-border last:border-0">
-                <td className="px-4 py-3">
+              <tr key={item.id} className="border-b border-surface-border last:border-0 transition-colors hover:bg-surface-muted/60">
+                <td className="px-5 py-3.5">
                   <p className="font-medium text-ink-900">{item.product.name}</p>
                   <p className="text-xs text-ink-500">{item.product.sku}</p>
                 </td>
-                <td className="px-4 py-3 text-right font-money text-ink-500">{item.expectedQty}</td>
-                <td className="px-4 py-3 text-right font-money text-ink-900">{item.countedQty}</td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-5 py-3.5 text-right font-money text-ink-500">{item.expectedQty}</td>
+                <td className="px-5 py-3.5 text-right font-money text-ink-900">{item.countedQty}</td>
+                <td className="px-5 py-3.5 text-right">
                   <span
                     className={`font-money font-semibold ${
                       item.difference === 0

@@ -1,42 +1,14 @@
 import { useEffect, useState } from "react";
+import { ShieldCheck } from "lucide-react";
 import { api } from "../lib/api";
-import { formatDate } from "../lib/format";
+import { formatDate, formatTime } from "../lib/format";
+import { ACTION_LABELS, ENTITY_LABELS, auditTone, describeAudit } from "../lib/auditDescribe";
 import type { AuditLogEntry } from "../lib/types";
+import { Input, Select } from "../components/ui/Field";
+import { Badge, EmptyState, PageHeader, Skeleton } from "../components/ui/Layout";
+import { Pagination, TableCard, tdClass, thClass, theadRowClass, trClass } from "../components/ui/Table";
 
 const PAGE_SIZE = 30;
-
-// Mesma lista fixa do enum AuditAction do schema (Fase 2) — não muda em
-// runtime, então não faz sentido buscar isso de uma API.
-const ACTION_LABELS: Record<string, string> = {
-  LOGIN: "Login",
-  LOGOUT: "Logout",
-  LOGIN_FALHOU: "Falha de login",
-  VENDA_CRIADA: "Venda criada",
-  VENDA_CANCELADA: "Venda cancelada",
-  VENDA_DEVOLVIDA: "Venda devolvida",
-  DESCONTO_APLICADO: "Desconto aplicado",
-  PRECO_ALTERADO: "Preço alterado",
-  PRODUTO_CRIADO: "Produto criado",
-  PRODUTO_ALTERADO: "Produto alterado",
-  PRODUTO_INATIVADO: "Produto inativado",
-  CATEGORIA_CRIADA: "Categoria criada",
-  CATEGORIA_ALTERADA: "Categoria alterada",
-  CATEGORIA_INATIVADA: "Categoria inativada",
-  ENTRADA_ESTOQUE: "Entrada de estoque",
-  AJUSTE_ESTOQUE: "Ajuste de estoque",
-  INVENTARIO_REALIZADO: "Inventário realizado",
-  VENDA_SEM_ESTOQUE_AUTORIZADA: "Venda sem estoque autorizada",
-  CAIXA_ABERTO: "Caixa aberto",
-  CAIXA_FECHADO: "Caixa fechado",
-  SANGRIA_REGISTRADA: "Sangria registrada",
-  SUPRIMENTO_REGISTRADO: "Suprimento registrado",
-  CONFIGURACAO_ALTERADA: "Configuração alterada",
-  SENHA_REDEFINIDA: "Senha redefinida",
-  IMPORTACAO_PRODUTOS: "Importação de produtos",
-  BACKUP_EXECUTADO: "Backup executado",
-};
-
-const ENTITY_OPTIONS = ["Product", "Category", "Sale", "User", "CashierSession", "Inventory", "Purchase"];
 
 export function AuditPage() {
   const [items, setItems] = useState<AuditLogEntry[]>([]);
@@ -75,19 +47,16 @@ export function AuditPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-ink-900">Auditoria</h1>
-        <p className="text-sm text-ink-500">{total} registro(s) — histórico de todas as ações do sistema</p>
-      </div>
+      <PageHeader title="Auditoria" description={`${total} registros · tudo o que foi feito no sistema, por quem e quando`} />
 
-      <div className="mb-4 flex flex-wrap gap-3">
-        <select
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[220px_200px_auto]">
+        <Select
+          aria-label="Filtrar por ação"
           value={action}
           onChange={(e) => {
             setPage(1);
             setAction(e.target.value);
           }}
-          className="rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none focus:border-brand-500"
         >
           <option value="">Todas as ações</option>
           {Object.entries(ACTION_LABELS).map(([value, label]) => (
@@ -95,137 +64,99 @@ export function AuditPage() {
               {label}
             </option>
           ))}
-        </select>
+        </Select>
 
-        <select
+        <Select
+          aria-label="Filtrar por área"
           value={entity}
           onChange={(e) => {
             setPage(1);
             setEntity(e.target.value);
           }}
-          className="rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none focus:border-brand-500"
         >
-          <option value="">Todas as entidades</option>
-          {ENTITY_OPTIONS.map((e) => (
-            <option key={e} value={e}>
-              {e}
+          <option value="">Todas as áreas</option>
+          {Object.entries(ENTITY_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
             </option>
           ))}
-        </select>
+        </Select>
 
-        <div className="flex items-center gap-1.5">
-          <input
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
             type="date"
+            aria-label="Data inicial"
             value={from}
             onChange={(e) => {
               setPage(1);
               setFrom(e.target.value);
               if (!to) setTo(e.target.value);
             }}
-            className="rounded-lg border border-surface-border px-2 py-1.5 text-sm outline-none focus:border-brand-500"
+            className="w-auto"
           />
           <span className="text-sm text-ink-500">até</span>
-          <input
+          <Input
             type="date"
+            aria-label="Data final"
             value={to}
             onChange={(e) => {
               setPage(1);
               setTo(e.target.value);
               if (!from) setFrom(e.target.value);
             }}
-            className="rounded-lg border border-surface-border px-2 py-1.5 text-sm outline-none focus:border-brand-500"
+            className="w-auto"
           />
           {(from || to) && (
             <button
+              type="button"
               onClick={() => {
                 setFrom("");
                 setTo("");
                 setPage(1);
               }}
-              className="text-xs font-medium text-ink-500 underline"
+              className="text-sm font-semibold text-brand-500 hover:text-brand-600"
             >
-              limpar
+              Limpar datas
             </button>
           )}
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
-        <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3">Data/hora</th>
-              <th className="px-4 py-3">Usuário</th>
-              <th className="px-4 py-3">Ação</th>
-              <th className="px-4 py-3">Entidade</th>
-              <th className="px-4 py-3">Detalhes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-ink-500">
-                  Carregando...
-                </td>
+      <TableCard footer={<Pagination page={page} totalPages={totalPages} onChange={setPage} />}>
+        {loading && items.length === 0 ? (
+          <Skeleton rows={8} />
+        ) : items.length === 0 ? (
+          <EmptyState icon={ShieldCheck} title="Nenhum registro" description="Nada encontrado para os filtros escolhidos." />
+        ) : (
+          <table className="w-full min-w-[640px] text-[15px]">
+            <thead>
+              <tr className={theadRowClass}>
+                <th className={thClass}>Quando</th>
+                <th className={thClass}>Quem</th>
+                <th className={thClass}>O que aconteceu</th>
               </tr>
-            )}
-            {!loading && items.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-ink-500">
-                  Nenhum registro encontrado para os filtros selecionados.
-                </td>
-              </tr>
-            )}
-            {items.map((log) => (
-              <tr key={log.id} className="border-b border-surface-border align-top last:border-0">
-                <td className="whitespace-nowrap px-4 py-3 text-ink-500">{formatDate(log.createdAt)}</td>
-                <td className="px-4 py-3 text-ink-900">{log.user?.fullName ?? "—"}</td>
-                <td className="px-4 py-3">
-                  <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600">
-                    {ACTION_LABELS[log.action] ?? log.action}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-ink-500">
-                  {log.entity ? `${log.entity}${log.entityId ? ` (${log.entityId.slice(0, 8)})` : ""}` : "—"}
-                </td>
-                <td className="max-w-xs px-4 py-3 text-xs text-ink-500">
-                  {log.details ? (
-                    <code className="break-words">{JSON.stringify(log.details)}</code>
-                  ) : (
-                    "—"
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-surface-border px-4 py-3 text-sm text-ink-500">
-            <span>
-              Página {page} de {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Anterior
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Próxima
-              </button>
-            </div>
-          </div>
+            </thead>
+            <tbody className={loading ? "opacity-60" : ""}>
+              {items.map((log) => {
+                const detail = describeAudit(log);
+                return (
+                  <tr key={log.id} className={trClass}>
+                    <td className={`${tdClass} whitespace-nowrap`}>
+                      <p className="text-ink-900">{formatDate(log.createdAt)}</p>
+                      <p className="text-sm text-ink-500">{formatTime(log.createdAt)}</p>
+                    </td>
+                    <td className={`${tdClass} text-ink-900`}>{log.user?.fullName ?? "Sistema"}</td>
+                    <td className={tdClass}>
+                      <Badge tone={auditTone(log.action)}>{ACTION_LABELS[log.action] ?? log.action}</Badge>
+                      {detail && <p className="mt-1 text-sm text-ink-700">{detail}</p>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
-      </div>
+      </TableCard>
     </div>
   );
 }

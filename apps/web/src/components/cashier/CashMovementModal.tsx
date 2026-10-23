@@ -41,11 +41,11 @@ export function CashMovementModal({ onClose, onSaved }: CashMovementModalProps) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-surface-border bg-surface p-6 shadow-card">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/40 backdrop-blur-[2px] sm:items-center sm:p-4">
+      <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-t-2xl bg-surface p-6 shadow-pop sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-ink-900">Sangria / Suprimento</h2>
-          <button onClick={onClose} className="text-ink-300 hover:text-ink-500">
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">Sangria / Suprimento</h2>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-lg text-ink-300 hover:bg-surface-muted hover:text-ink-700">
             <X size={18} />
           </button>
         </div>
@@ -81,7 +81,7 @@ export function CashMovementModal({ onClose, onSaved }: CashMovementModalProps) 
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0,00"
-            className="mb-4 w-full rounded-lg border border-surface-border px-3 py-2.5 font-money text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className="mb-4 w-full rounded-[10px] border border-surface-border px-3 h-11 font-money text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
           />
 
           <label className="mb-1.5 block text-sm font-medium text-ink-700">Motivo</label>
@@ -89,7 +89,7 @@ export function CashMovementModal({ onClose, onSaved }: CashMovementModalProps) 
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={type === "SANGRIA" ? "Ex: depósito bancário" : "Ex: reforço de troco"}
-            className="mb-4 w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className="mb-4 w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
           />
 
           {error && (
@@ -100,14 +100,14 @@ export function CashMovementModal({ onClose, onSaved }: CashMovementModalProps) 
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
+              className="inline-flex items-center justify-center gap-2 flex-1 rounded-[10px] border border-surface-border px-4 h-11 text-sm font-semibold text-ink-900 transition hover:bg-brand-50 hover:border-brand-200 bg-surface"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 flex-1 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? "Salvando..." : "Confirmar"}
             </button>

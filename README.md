@@ -187,6 +187,13 @@ pg_restore --clean --if-exists -d "postgresql://usuario:senha@host:5432/banco" a
 - **Banco de dados**: PostgreSQL gerenciado na nuvem (Neon, Supabase, RDS, etc.) — aponte `DATABASE_URL` para ele e rode `prisma migrate deploy`.
 - Configure `NODE_ENV=production`, um `JWT_SECRET` longo e aleatório, e `WEB_ORIGIN` apontando para o domínio real do frontend.
 
+## Identidade visual (direção Azulejo)
+
+- **Cores e fontes**: `apps/web/tailwind.config.js` — azul cobalto (`brand`), texto (`ink`), superfícies, `success`/`amber`/`danger` só para estados reais (zero nunca é colorido).
+- **Fontes**: Bricolage Grotesque (títulos e números de destaque) + Work Sans (texto). Valores usam `font-money` (algarismos tabulares); códigos de barras/SKU usam `font-code`.
+- **Componentes base** em `apps/web/src/components/ui/`: `Button`/`ButtonLink`/`IconButton`, `Field`/`Input`/`Select`/`ErrorMessage`, `Modal`/`ModalActions`/`ConfirmModal`, `PageHeader`/`Panel`/`Badge`/`EmptyState`/`Skeleton`/`TileBand`, `Table` (cabeçalho, paginação) e `Toast` (`toast.success(...)`).
+- **Regra**: tela nova usa esses componentes — não recriar botão, campo ou modal com classes soltas.
+
 ## Estrutura do projeto
 
 ```

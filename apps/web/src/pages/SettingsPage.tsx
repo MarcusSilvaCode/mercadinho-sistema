@@ -3,6 +3,8 @@ import { CheckCircle2, DatabaseBackup, PlayCircle, XCircle } from "lucide-react"
 import { api, getApiErrorMessage } from "../lib/api";
 import { formatDate } from "../lib/format";
 import type { BackupLogEntry, StoreSettings } from "../lib/types";
+import { useStoreSettings } from "../store/storeSettings";
+import { toast } from "../components/ui/Toast";
 
 const WEEKDAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
@@ -16,6 +18,8 @@ export function SettingsPage() {
   useEffect(() => {
     api.get<{ settings: StoreSettings }>("/settings").then(({ data }) => {
       setSettings(data.settings);
+      useStoreSettings.getState().setStoreName(data.settings.storeName);
+      toast.success("Configurações salvas.");
       setLoading(false);
     });
   }, []);
@@ -58,9 +62,9 @@ export function SettingsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-ink-900">Configurações</h1>
-        <p className="text-sm text-ink-500">Dados da loja, regras de negócio e backup.</p>
+      <div className="mb-8">
+        <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Configurações</h1>
+        <p className="mt-1 text-[15px] text-ink-500">Dados da loja, regras de negócio e backup.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="mb-8 space-y-6">
@@ -70,35 +74,35 @@ export function SettingsPage() {
               <input
                 value={settings.storeName}
                 onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="Nome curto">
               <input
                 value={settings.shortName ?? ""}
                 onChange={(e) => setSettings({ ...settings, shortName: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="CNPJ/CPF">
               <input
                 value={settings.document ?? ""}
                 onChange={(e) => setSettings({ ...settings, document: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="Telefone">
               <input
                 value={settings.phone ?? ""}
                 onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="WhatsApp">
               <input
                 value={settings.whatsapp ?? ""}
                 onChange={(e) => setSettings({ ...settings, whatsapp: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="E-mail">
@@ -106,14 +110,14 @@ export function SettingsPage() {
                 type="email"
                 value={settings.email ?? ""}
                 onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="Endereço" full>
               <input
                 value={settings.address ?? ""}
                 onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               />
             </Field>
           </div>
@@ -128,7 +132,7 @@ export function SettingsPage() {
                 min={0}
                 value={settings.defaultMargin}
                 onChange={(e) => setSettings({ ...settings, defaultMargin: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 font-money"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 font-money bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="Limite máximo de desconto (%)">
@@ -139,7 +143,7 @@ export function SettingsPage() {
                 max={100}
                 value={settings.maxDiscountPercent}
                 onChange={(e) => setSettings({ ...settings, maxDiscountPercent: e.target.value })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 font-money"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 font-money bg-surface placeholder:text-ink-300"
               />
             </Field>
             <Field label="Bloqueio de sessão por inatividade (min)">
@@ -148,7 +152,7 @@ export function SettingsPage() {
                 min={1}
                 value={settings.sessionTimeoutMin}
                 onChange={(e) => setSettings({ ...settings, sessionTimeoutMin: Number(e.target.value) })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 font-money"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 font-money bg-surface placeholder:text-ink-300"
               />
             </Field>
           </div>
@@ -160,7 +164,7 @@ export function SettingsPage() {
               <select
                 value={settings.backupDayOfWeek}
                 onChange={(e) => setSettings({ ...settings, backupDayOfWeek: Number(e.target.value) })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               >
                 {WEEKDAYS.map((day, i) => (
                   <option key={i} value={i}>
@@ -173,7 +177,7 @@ export function SettingsPage() {
               <select
                 value={settings.backupHour}
                 onChange={(e) => setSettings({ ...settings, backupHour: Number(e.target.value) })}
-                className="w-full rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
               >
                 {Array.from({ length: 24 }, (_, h) => (
                   <option key={h} value={h}>
@@ -191,7 +195,7 @@ export function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-5 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-50"
           >
             {saving ? "Salvando..." : "Salvar configurações"}
           </button>
@@ -210,7 +214,7 @@ export function SettingsPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-surface-border bg-surface p-5 shadow-card">
+    <div className="rounded-2xl border border-surface-border bg-surface p-5">
       <h2 className="mb-4 text-sm font-semibold text-ink-900">{title}</h2>
       {children}
     </div>
@@ -256,7 +260,7 @@ function BackupHistorySection() {
   }
 
   return (
-    <div className="rounded-2xl border border-surface-border bg-surface p-5 shadow-card">
+    <div className="rounded-2xl border border-surface-border bg-surface p-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
           <DatabaseBackup size={16} /> Histórico de backups
@@ -264,7 +268,7 @@ function BackupHistorySection() {
         <button
           onClick={handleRunBackup}
           disabled={running}
-          className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-3 h-11 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-50"
         >
           <PlayCircle size={15} /> {running ? "Executando..." : "Fazer backup agora"}
         </button>

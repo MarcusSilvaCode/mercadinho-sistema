@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Receipt, RotateCcw, X, XCircle } from "lucide-react";
 import { api, getApiErrorMessage } from "../lib/api";
-import { formatCurrency, formatDate } from "../lib/format";
+import { formatCurrency, formatDate, formatDateTime } from "../lib/format";
 import type { SaleDetail, SaleStatus } from "../lib/types";
 import { ReturnModal } from "../components/sales/ReturnModal";
+import { Pagination } from "../components/ui/Table";
 
 const STATUS_LABELS: Record<SaleStatus, string> = {
   CONCLUIDA: "Concluída",
@@ -75,9 +76,9 @@ export function SalesPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-ink-900">Vendas</h1>
-        <p className="text-sm text-ink-500">{total} venda(s) — consulte, cancele ou devolva produtos</p>
+      <div className="mb-8">
+        <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Vendas</h1>
+        <p className="mt-1 text-[15px] text-ink-500">{total} {total === 1 ? "venda" : "vendas"} · toque numa venda para ver, cancelar ou devolver</p>
       </div>
 
       <form onSubmit={handleSearchSubmit} className="mb-4 flex flex-wrap gap-3">
@@ -86,7 +87,7 @@ export function SalesPage() {
           value={numberFilter}
           onChange={(e) => setNumberFilter(e.target.value)}
           placeholder="Buscar por número da venda"
-          className="w-56 rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="w-56 rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
         />
         <select
           value={statusFilter}
@@ -94,7 +95,7 @@ export function SalesPage() {
             setPage(1);
             setStatusFilter(e.target.value as SaleStatus | "");
           }}
-          className="rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none focus:border-brand-500"
+          className="h-11 cursor-pointer rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         >
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([value, label]) => (
@@ -105,22 +106,22 @@ export function SalesPage() {
         </select>
         <button
           type="submit"
-          className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 h-11 text-sm font-semibold text-white transition hover:bg-brand-600"
         >
           Buscar
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface">
         <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
           <thead>
-            <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3">Nº</th>
-              <th className="px-4 py-3">Data</th>
-              <th className="px-4 py-3">Usuário</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Total</th>
+            <tr className="border-b border-surface-border text-left text-xs font-semibold uppercase tracking-[0.06em] text-ink-500">
+              <th className="px-5 py-3.5">Nº</th>
+              <th className="px-5 py-3.5">Data</th>
+              <th className="px-5 py-3.5">Usuário</th>
+              <th className="px-5 py-3.5">Status</th>
+              <th className="px-5 py-3.5 text-right">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -144,15 +145,15 @@ export function SalesPage() {
                 onClick={() => openSale(sale.id)}
                 className="cursor-pointer border-b border-surface-border last:border-0 hover:bg-surface-muted"
               >
-                <td className="px-4 py-3 font-money text-ink-900">#{sale.number}</td>
-                <td className="px-4 py-3 text-ink-500">{formatDate(sale.createdAt)}</td>
-                <td className="px-4 py-3 text-ink-500">{sale.user.fullName}</td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5 font-money text-ink-900">#{sale.number}</td>
+                <td className="px-5 py-3.5 text-ink-700">{formatDateTime(sale.createdAt)}</td>
+                <td className="px-5 py-3.5 text-ink-500">{sale.user.fullName}</td>
+                <td className="px-5 py-3.5">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[sale.status]}`}>
                     {STATUS_LABELS[sale.status]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right font-money font-medium text-ink-900">
+                <td className="px-5 py-3.5 text-right font-money font-medium text-ink-900">
                   {formatCurrency(sale.total)}
                 </td>
               </tr>
@@ -161,29 +162,7 @@ export function SalesPage() {
         </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-surface-border px-4 py-3 text-sm text-ink-500">
-            <span>
-              Página {page} de {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Anterior
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Próxima
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
 
       {selectedSale && (
@@ -238,13 +217,13 @@ function SaleDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 p-4">
-      <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-surface-border bg-surface p-6 shadow-card">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/40 backdrop-blur-[2px] sm:items-center sm:p-4">
+      <div role="dialog" aria-modal="true" className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-surface p-6 shadow-pop sm:rounded-2xl">
         <div className="mb-1 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-semibold text-ink-900">
             <Receipt size={17} /> Venda #{sale.number}
           </h2>
-          <button onClick={onClose} className="text-ink-300 hover:text-ink-500">
+          <button type="button" onClick={onClose} aria-label="Fechar" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-lg text-ink-300 hover:bg-surface-muted hover:text-ink-700">
             <X size={18} />
           </button>
         </div>
@@ -286,7 +265,7 @@ function SaleDetailModal({
             {canReturn && (
               <button
                 onClick={() => setReturnOpen(true)}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-surface-border px-4 py-2.5 text-sm font-medium text-ink-700 transition hover:bg-surface-muted"
+                className="inline-flex items-center justify-center gap-2 flex-1 rounded-[10px] border border-surface-border px-4 h-11 text-sm font-semibold text-ink-900 transition hover:bg-brand-50 hover:border-brand-200 bg-surface"
               >
                 <RotateCcw size={15} /> Devolver produto
               </button>
@@ -317,7 +296,7 @@ function SaleDetailModal({
               <button
                 type="button"
                 onClick={() => setCancelOpen(false)}
-                className="flex-1 rounded-lg border border-surface-border px-3 py-2 text-sm text-ink-700 hover:bg-surface-muted"
+                className="inline-flex items-center justify-center gap-2 flex-1 rounded-[10px] border border-surface-border px-3 h-11 text-sm text-ink-900 hover:bg-brand-50 hover:border-brand-200 bg-surface"
               >
                 Voltar
               </button>

@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 import { formatDate } from "../lib/format";
 import type { Category, Product, ProductListResponse, StockMovement } from "../lib/types";
 import { StockAdjustModal } from "../components/stock/StockAdjustModal";
+import { Pagination } from "../components/ui/Table";
 
 const PAGE_SIZE = 20;
 
@@ -70,9 +71,9 @@ export function StockPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-ink-900">Estoque</h1>
-        <p className="text-sm text-ink-500">{total} produto(s) — ajuste manual e histórico de movimentações</p>
+      <div className="mb-8">
+        <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Estoque</h1>
+        <p className="mt-1 text-[15px] text-ink-500">{total} produto(s) — ajuste manual e histórico de movimentações</p>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3">
@@ -83,7 +84,7 @@ export function StockPage() {
             setSearch(e.target.value);
           }}
           placeholder="Nome, código de barras, SKU ou marca..."
-          className="min-w-[240px] flex-1 rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="min-w-[240px] flex-1 rounded-[10px] border border-surface-border px-3 h-11 text-[15px] outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 bg-surface placeholder:text-ink-300"
         />
 
         <select
@@ -92,7 +93,7 @@ export function StockPage() {
             setPage(1);
             setCategoryId(e.target.value);
           }}
-          className="rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none focus:border-brand-500"
+          className="h-11 cursor-pointer rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         >
           <option value="">Todas as categorias</option>
           {categories.map((c) => (
@@ -108,7 +109,7 @@ export function StockPage() {
             setPage(1);
             setStockStatus(e.target.value as StockStatus);
           }}
-          className="rounded-lg border border-surface-border px-3 py-2.5 text-sm outline-none focus:border-brand-500"
+          className="h-11 cursor-pointer rounded-[10px] border border-surface-border bg-surface px-3 text-[15px] text-ink-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         >
           <option value="">Todos os status de estoque</option>
           {Object.entries(STATUS_LABELS).map(([value, label]) => (
@@ -119,17 +120,17 @@ export function StockPage() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+      <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface">
         <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
           <thead>
-            <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
-              <th className="px-4 py-3">Produto</th>
-              <th className="px-4 py-3">Categoria</th>
-              <th className="px-4 py-3 text-right">Estoque atual</th>
-              <th className="px-4 py-3 text-right">Estoque mínimo</th>
-              <th className="px-4 py-3">Validade</th>
-              <th className="px-4 py-3 text-right">Ações</th>
+            <tr className="border-b border-surface-border text-left text-xs font-semibold uppercase tracking-[0.06em] text-ink-500">
+              <th className="px-5 py-3.5">Produto</th>
+              <th className="px-5 py-3.5">Categoria</th>
+              <th className="px-5 py-3.5 text-right">Estoque atual</th>
+              <th className="px-5 py-3.5 text-right">Estoque mínimo</th>
+              <th className="px-5 py-3.5">Validade</th>
+              <th className="px-5 py-3.5 text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -154,13 +155,13 @@ export function StockPage() {
               const expired = product.expirationDate && new Date(product.expirationDate) < new Date();
 
               return (
-                <tr key={product.id} className="border-b border-surface-border last:border-0">
-                  <td className="px-4 py-3">
+                <tr key={product.id} className="border-b border-surface-border last:border-0 transition-colors hover:bg-surface-muted/60">
+                  <td className="px-5 py-3.5">
                     <p className="font-medium text-ink-900">{product.name}</p>
                     <p className="text-xs text-ink-500">{product.sku}</p>
                   </td>
-                  <td className="px-4 py-3 text-ink-500">{product.category.name}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-5 py-3.5 text-ink-500">{product.category.name}</td>
+                  <td className="px-5 py-3.5 text-right">
                     <span
                       className={`font-money text-sm ${
                         stockNegative
@@ -175,8 +176,8 @@ export function StockPage() {
                       {product.stockQuantity}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right font-money text-ink-500">{product.minStockQuantity}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5 text-right font-money text-ink-500">{product.minStockQuantity}</td>
+                  <td className="px-5 py-3.5">
                     {product.expirationDate ? (
                       <span className={`text-xs ${expired ? "font-semibold text-danger-500" : "text-ink-500"}`}>
                         {formatDate(product.expirationDate)}
@@ -185,19 +186,19 @@ export function StockPage() {
                       <span className="text-xs text-ink-300">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     <div className="flex justify-end gap-1">
                       <button
                         onClick={() => setHistoryProduct(product)}
                         title="Histórico de movimentações"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted hover:text-ink-900"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 transition hover:bg-brand-50 hover:text-brand-600"
                       >
                         <History size={15} />
                       </button>
                       <button
                         onClick={() => setAdjusting(product)}
                         title="Ajustar estoque"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-surface-muted hover:text-ink-900"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 transition hover:bg-brand-50 hover:text-brand-600"
                       >
                         <SlidersHorizontal size={15} />
                       </button>
@@ -210,29 +211,7 @@ export function StockPage() {
         </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-surface-border px-4 py-3 text-sm text-ink-500">
-            <span>
-              Página {page} de {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Anterior
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="rounded-lg border border-surface-border px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Próxima
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
 
       {adjusting && (
@@ -267,11 +246,11 @@ function MovementHistoryModal({ product, onClose }: { product: Product; onClose:
   }, [product.id]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 p-4">
-      <div className="max-h-[80vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-surface-border bg-surface p-6 shadow-card">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/40 backdrop-blur-[2px] sm:items-center sm:p-4">
+      <div role="dialog" aria-modal="true" className="max-h-[80vh] w-full max-w-xl overflow-y-auto rounded-t-2xl bg-surface p-6 shadow-pop sm:rounded-2xl">
         <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-ink-900">Histórico de movimentações</h2>
-          <button onClick={onClose} className="text-ink-300 hover:text-ink-500">
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">Histórico de movimentações</h2>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-lg text-ink-300 hover:bg-surface-muted hover:text-ink-700">
             ✕
           </button>
         </div>

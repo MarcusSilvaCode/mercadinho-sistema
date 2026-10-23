@@ -27,17 +27,19 @@ export function ReportsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-ink-900">Relatórios</h1>
-        <p className="text-sm text-ink-500">Vendas, financeiro, produtos e estoque por período.</p>
+      <div className="mb-8">
+        <h1 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink-900 md:text-[32px]">Relatórios</h1>
+        <p className="mt-1 text-[15px] text-ink-500">Vendas, financeiro, produtos e estoque por período.</p>
       </div>
 
-      <div className="mb-4 flex gap-1 border-b border-surface-border">
+      <div role="tablist" aria-label="Tipo de relatório" className="mb-5 flex gap-1 overflow-x-auto border-b border-surface-border">
         {TABS.map((t) => (
           <button
             key={t}
+            role="tab"
+            aria-selected={tab === t}
             onClick={() => setTab(t)}
-            className={`border-b-2 px-4 py-2 text-sm font-medium transition ${
+            className={`-mb-px whitespace-nowrap border-b-2 px-4 py-3 text-[15px] font-semibold transition ${
               tab === t ? "border-brand-500 text-brand-600" : "border-transparent text-ink-500 hover:text-ink-900"
             }`}
           >
@@ -74,7 +76,7 @@ function FinancialTab({ period }: { period: ReportPeriod }) {
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
       <Metric label="Faturamento bruto" value={formatCurrency(report.faturamentoBruto)} />
-      <Metric label="Descontos" value={formatCurrency(report.descontos)} tone="amber" />
+      <Metric label="Descontos" value={formatCurrency(report.descontos)} tone={report.descontos > 0 ? "amber" : undefined} />
       <Metric label="Faturamento líquido" value={formatCurrency(report.faturamentoLiquido)} />
       <Metric label="Custo dos produtos vendidos" value={formatCurrency(report.cpv)} />
       <Metric label="Lucro estimado" value={formatCurrency(report.lucroEstimado)} hint="Estimativa, não é lucro contábil" />
@@ -170,7 +172,7 @@ function StockLink({ label, filter }: { label: string; filter: string }) {
   return (
     <Link
       to={filter ? `/estoque?stockStatus=${filter}` : "/estoque"}
-      className="rounded-2xl border border-surface-border bg-surface p-4 text-sm font-medium text-ink-700 shadow-card transition hover:border-brand-100 hover:text-brand-600"
+      className="rounded-2xl border border-surface-border bg-surface p-4 text-sm font-medium text-ink-700 transition hover:border-brand-100 hover:text-brand-600"
     >
       {label} →
     </Link>
@@ -179,25 +181,25 @@ function StockLink({ label, filter }: { label: string; filter: string }) {
 
 function Metric({ label, value, tone, hint }: { label: string; value: string; tone?: "amber"; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-surface-border bg-surface p-4 shadow-card">
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-ink-500">{label}</p>
-      <p className={`font-money text-lg font-semibold ${tone === "amber" ? "text-amber-500" : "text-ink-900"}`}>
+    <div className="rounded-2xl border border-surface-border bg-surface p-5">
+      <p className="text-sm text-ink-500">{label}</p>
+      <p className={`mt-1 font-display text-2xl font-bold font-money ${tone === "amber" ? "text-amber-500" : "text-ink-900"}`}>
         {value}
       </p>
-      {hint && <p className="mt-0.5 text-xs text-ink-300">{hint}</p>}
+      {hint && <p className="mt-0.5 text-xs text-ink-500">{hint}</p>}
     </div>
   );
 }
 
 function Table({ columns, rows, empty }: { columns: string[]; rows: string[][]; empty: string }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+    <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
         <thead>
-          <tr className="border-b border-surface-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-ink-500">
+          <tr className="border-b border-surface-border text-left text-xs font-semibold uppercase tracking-[0.06em] text-ink-500">
             {columns.map((c) => (
-              <th key={c} className="px-4 py-3">
+              <th key={c} className="px-5 py-3.5">
                 {c}
               </th>
             ))}
@@ -212,7 +214,7 @@ function Table({ columns, rows, empty }: { columns: string[]; rows: string[][]; 
             </tr>
           )}
           {rows.map((row, i) => (
-            <tr key={i} className="border-b border-surface-border last:border-0">
+            <tr key={i} className="border-b border-surface-border last:border-0 transition-colors hover:bg-surface-muted/60">
               {row.map((cell, j) => (
                 <td key={j} className={`px-4 py-2.5 ${j > 0 ? "text-right font-money" : "text-ink-900"}`}>
                   {cell}
